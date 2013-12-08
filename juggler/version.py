@@ -13,7 +13,7 @@ class InvalidType(Exception):
     pass
 
 
-class VersionRequest():
+class VersionInfo():
     def __convert_int(self, number):
         converted = None
         if not number is None:
@@ -40,7 +40,7 @@ def parse_version_request(string):
 
     string - str representation of a version request
     
-    returns a VersionRequest instance
+    returns a VersionInfo instance
     raises InvalidString when there are components on the string that can not be parsed
     raises InvalidType when the parameter is not a str        
     '''
@@ -49,10 +49,10 @@ def parse_version_request(string):
     string = str(string)
     
     if string == '':
-        return VersionRequest()
+        return VersionInfo()
     
     match = re.match('([0-9]+)(?:.([0-9]+))?(?:.([0-9]+))?\Z', string)
     if match:
-        return VersionRequest(major=match.group(1), minor=match.group(2), revision=match.group(3))
+        return VersionInfo(major=match.group(1), minor=match.group(2), revision=match.group(3))
     
     raise InvalidString
