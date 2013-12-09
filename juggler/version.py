@@ -45,7 +45,7 @@ def parse_version_request(string):
     raises InvalidType when the parameter is not a str        
     '''
     if not isinstance(string, str):
-        raise InvalidType
+        raise InvalidType('string argument of type %s instead of str' % type(string))
     string = str(string)
     
     if string == '':
@@ -55,4 +55,4 @@ def parse_version_request(string):
     if match:
         return VersionInfo(major=match.group(1), minor=match.group(2), revision=match.group(3))
     
-    raise InvalidString
+    raise InvalidString('%s is not a valid version string' % string)
