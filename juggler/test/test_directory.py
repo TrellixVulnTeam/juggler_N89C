@@ -5,6 +5,7 @@ Created on 09.12.2013
 '''
 import unittest
 import os
+import tempfile
 from xml.etree import ElementTree
 
 class FileNotFound(Exception):
@@ -29,6 +30,14 @@ class Directory():
         return True
 
 class TestDirectory(unittest.TestCase):
+    
+    def setUp(self):
+        handle, filename = tempfile.mkstemp()
+        os.close(handle)
+        self.__tempfilename = filename
+
+    def tearDown(self):
+        os.remove(self.__tempfilename)
 
     def test_ContructFromNothing_CreatesEmtpy(self):
         directory = Directory()
@@ -44,16 +53,10 @@ class TestDirectory(unittest.TestCase):
         self.assertRaises(InvalidFile, Directory, 'test_directory.py')
 
     def test_ConstructFromEmptyFile_RaisesInvalidFile(self):
-        testfile = 'SomeEmptyFileForTesting.xml'
-        with open(testfile, 'w'):
-            pass
-        self.assertRaises(InvalidFile, Directory, testfile)
-        os.remove(testfile)
+        self.assertRaises(InvalidFile, Directory, self.__tempfilename)
     
     def test_ConstructFromEmptyXMLFile_CreatesEmpty(self):
-        testfile = 'SomeEmptyXMLFileForTesting.xml'
-        with open(testfile, 'w') as xmlfile:
+        with open(self.__tempfilename, 'w') as xmlfile:
             xmlfile.write('<None/>')
-        directory = Directory(testfile)
-        self.assertTrue(directory.is_empty())
-        os.remove(testfile)
+        directory = Directory(self.__tempfilename)
+        self.assertTrue(directory.is_empty() and False)
