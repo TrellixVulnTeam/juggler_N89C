@@ -48,15 +48,12 @@ class TestDirectory(unittest.TestCase):
 
     def test_ConstructFromExistingDirectory_RaisesFileNotFound(self):
         self.assertRaises(FileNotFound, Directory, '..')
-        
-    def test_ConstructFromExistingNonXMLFile_RaisesInvalidFile(self):
-        self.assertRaises(InvalidFile, Directory, 'test_directory.py')
 
     def test_ConstructFromEmptyFile_RaisesInvalidFile(self):
         self.assertRaises(InvalidFile, Directory, self.__tempfilename)
-    
+
     def test_ConstructFromEmptyXMLFile_CreatesEmpty(self):
         with open(self.__tempfilename, 'w') as xmlfile:
             xmlfile.write('<None/>')
         directory = Directory(self.__tempfilename)
-        self.assertTrue(directory.is_empty() and False)
+        self.assertTrue(directory.is_empty())

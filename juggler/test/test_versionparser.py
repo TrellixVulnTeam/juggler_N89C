@@ -54,5 +54,3 @@ class TestVersionInfo(unittest.TestCase):
     def check_invalid_string(self, string):
         return self.assertRaises(version.InvalidString, version.parse_version_request, string)
 
-        
-
