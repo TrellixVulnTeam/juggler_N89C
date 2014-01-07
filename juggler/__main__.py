@@ -1,7 +1,10 @@
 #!/usr/bin/env/python
 
 import argparse
+import config
+import os
 import sys
+from lib2to3.tests.support import proj_dir
 
 def create_argparser():
     parser = argparse.ArgumentParser(prog='juggler',
@@ -28,8 +31,14 @@ def create_argparser():
 def main():
     command = ''
     
-    # read global config
-    # read project config
+    parser = create_argparser()
+    args = parser.parse_args()
+    
+    global_config = config.JugglerConfig()
+    global_config.load(os.path.expanduser(args.user_config))
+    
+    project_config = config.ProjectConfig()
+    project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggler.xml')))
     
     if command == 'fetch':
         # for each dependency
