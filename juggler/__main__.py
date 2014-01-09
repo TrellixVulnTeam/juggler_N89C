@@ -4,29 +4,17 @@ import argparse
 import config
 import os
 import sys
-from lib2to3.tests.support import proj_dir
 
 def create_argparser():
     parser = argparse.ArgumentParser(prog='juggler',
+                                     version='v1.0',
                                      description='')
     
     parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish'])
-    parser.add_argument('PATH', action='store')
-    parser.add_argument('--user_config', action='store', default='~/.juggler/global.xml')
+    parser.add_argument('PATH', action='store', help='Path to the project to be juggled. Must be a directory containing a juggle.xml')
+    parser.add_argument('--user_config', action='store', default='~/.juggler/global.xml', help='Specify a juggler configuration explicitly. Defaults to ~/.juggler/global.xml')
     
     return parser
-
-# global config
-#    remote_repository
-#    local_repository
-
-# project config
-#    name
-#    dependencies
-#        library: name, version (may be partially specified, from all that match we take latest)
-#    artifacts
-#        file: path
-
 
 def main():
     command = ''
@@ -38,7 +26,7 @@ def main():
     global_config.load(os.path.expanduser(args.user_config))
     
     project_config = config.ProjectConfig()
-    project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggler.xml')))
+    project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggle.xml')))
     
     if command == 'fetch':
         # for each dependency

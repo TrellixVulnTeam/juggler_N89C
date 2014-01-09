@@ -1,0 +1,14 @@
+<Project>
+    <Name>TestProject</Name>
+    <Version>v0.1</Version>
+    <Requires>
+        <Package>
+            <Name>RequiredPackage</Name>
+            <Version></Version>
+        </Package>
+    </Requires>
+    <PackageStructure>
+        <Library>libTest.a</Library>
+        <Header>test.h</Header>
+    </PackageStructure>
+</Project>

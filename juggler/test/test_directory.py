@@ -85,7 +85,7 @@ class TestListing(unittest.TestCase):
         self.assertEqual(listing.get_package('SomePackage'), None)
     
     def test_LoadSinglePacketData_CreatesNonEmptyListing(self):
-        listing = self.simulate_xml_load('<Listing> <Package name="SomePackage"> <Build version="1.0.0"/> </Package> </Listing>')
+        listing = self.simulate_xml_load('<Listing> <Package name="SomePackage"> <Build version="v1.0.0"/> </Package> </Listing>')
         self.assertFalse(listing.is_empty())
         self.assertNotEqual(listing.get_package('SomePackage'), None)
 

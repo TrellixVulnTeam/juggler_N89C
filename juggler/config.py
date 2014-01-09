@@ -24,10 +24,10 @@ example project configuration
             </Version> <!-- optional -->
         </Package>
     </Requires>
-    <Package>
+    <PackageStructure>
         <Library>libProject.a</Library>
         <Header>project.h</Header>
-    </Package>
+    </PackageStructure>
 </Project>
 '''
 class ProjectConfig:
@@ -49,11 +49,19 @@ class ProjectConfig:
         if self.name is None or self.name == "":
             raise ConfigurationError("The name given in your project configuration (%s) is not valid." % self.local_repository)
         try:
-            self.version = version.parse_version(root.find('Version'))
+            self.version = version.parse_version(root.find('Version').text)
         except InvalidString as e:
             raise ConfigurationError("My parser complained (%s) when processing the version given in your project configuration." % e)
         
-        # parse required packages
+        for element in root.findall('Requires/Package'):
+            pack = {}
+            pack['name'] = element.find('Name').text
+            pack_version = element.find('Version').text
+            if pack_version is None:
+                pack_version = ''
+            pack['version'] = version.parse_version(pack_version)
+            self.required_packages.append(pack)
+
         # parse packaging information
 
 '''

@@ -58,7 +58,7 @@ def parse_version(string):
     
     returns a VersionInfo instance
     raises InvalidString when there are components on the string that can not be parsed
-    raises InvalidType when the parameter is not a str        
+    raises InvalidType when the parameter is not a str
     '''
     if not isinstance(string, str):
         raise InvalidType('string argument of type %s instead of str' % type(string))
