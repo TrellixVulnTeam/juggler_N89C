@@ -7,8 +7,12 @@
             <Version></Version>
         </Package>
     </Requires>
-    <PackageStructure>
+    <PackageStructure> <!-- Default flavor ('Vanilla') -->
         <Library>libTest.a</Library>
+        <Header>test.h</Header>
+    </PackageStructure>
+    <PackageStructure flavor='Debug'>
+        <Library>libTestD.a</Library>
         <Header>test.h</Header>
     </PackageStructure>
 </Project>
