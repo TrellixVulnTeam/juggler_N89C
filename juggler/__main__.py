@@ -2,6 +2,7 @@
 
 import argparse
 import config
+import dependency
 import os
 import sys
 
@@ -24,6 +25,8 @@ def main():
     parser = create_argparser()
     args = parser.parse_args()
     
+    deployment_path = os.path.join(args.PATH, '.juggler')
+    
     global_config = config.JugglerConfig()
     global_config.load(os.path.expanduser(args.user_config))
     
@@ -31,14 +34,9 @@ def main():
     project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggle.xml')))
     
     if command == 'fetch':
-        # for each dependency
-        # - if not found in local repo, download from remote repo
-        # - if found in local repo, touch
-        # - unpack from local repo to project dependency folder
-        # remove unused dependencies from project dep folder
+        dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
+        dep_manager.deploy(project_config.required_packages, deployment_path, args.flavor)
         # delete packages in local repo that are older than a month
-        # create a file with include directives for gcc
-        # extract project version from code
         return 0;
     elif command == 'publish':
         # pack artifacts in tar file
