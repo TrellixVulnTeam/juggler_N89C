@@ -6,7 +6,7 @@ Created on 10.01.2014
 
 import listing
 import os
-
+import urllib
 
 def get_listing_filename():
     return 'juggler_listing.xml'
@@ -14,12 +14,13 @@ def get_listing_filename():
 class DependencyManager:
     def __init__(self, local_repository, remote_repositories):
         # download/read listings
-        self.__local_listing = listing.load_listing_file(os.path.join(local_repository, get_listing_filename()))
+        self.__local_listing = listing.load_listing_from_file(os.path.join(local_repository, get_listing_filename()))
         self.__remote_listing = []
         for repo in remote_repositories:
-            # download listing
-            # parse listing
-            pass
+            try:
+                self.__remote_listing.add(listing.load_listing_from_url(repo))
+            except listing.FileNotFound as error:
+                pass
     
     def deploy(self, required_packages, target_directory, flavor):
         for package in required_packages:

@@ -5,6 +5,7 @@ Created on 09.01.2014
 '''
 
 import os
+import urllib
 from xml.etree import ElementTree
 
 class FileNotFound(Exception):
@@ -28,18 +29,32 @@ class Listing():
             return name
         return None
 
-def load_listing_file(filename):
+def load_listing_from_url(url):
+    remotefile = None
+    try:
+        remotefile = urllib.urlopen(url)
+    except IOError as error:
+        raise FileNotFound('%s could not be accessed: %s' % (url, error))
+    
+    return load_listing(remotefile)
+    
+
+def load_listing_from_file(filename):
     if filename is None:
         return
 
     if not os.path.isfile(filename):
         raise FileNotFound('%s is a directory or missing' % filename)
+    
+    return load_listing(filename)
 
+
+def load_listing(source):
     xmltree = None
     try:
-        xmltree = ElementTree.parse(filename)
+        xmltree = ElementTree.parse(source)
     except ElementTree.ParseError as error:
-        raise InvalidFile('parsing error in %s: %s' % (filename, error))
+        raise InvalidFile('parsing error in %s: %s' % (source, error))
 
     listing = Listing()
     entry = xmltree.find('./Package')
@@ -47,3 +62,4 @@ def load_listing_file(filename):
         listing.add_package(entry.attrib['name'])
 
     return listing
+    

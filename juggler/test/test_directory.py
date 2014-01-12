@@ -23,13 +23,13 @@ class TestListing(unittest.TestCase):
         self.assertTrue(directory.is_empty())
 
     def test_LoadMissingFile_RaisesFileNotFound(self):
-        self.assertRaises(listing.FileNotFound, listing.load_listing_file, 'RandomNonExistentFile')
+        self.assertRaises(listing.FileNotFound, listing.load_listing_from_file, 'RandomNonExistentFile')
 
     def test_LoadDirectory_RaisesFileNotFound(self):
-        self.assertRaises(listing.FileNotFound, listing.load_listing_file, '..')
+        self.assertRaises(listing.FileNotFound, listing.load_listing_from_file, '..')
 
     def test_LoadEmptyFile_RaisesInvalidFile(self):
-        self.assertRaises(listing.InvalidFile, listing.load_listing_file, self.__tempfilename)
+        self.assertRaises(listing.InvalidFile, listing.load_listing_from_file, self.__tempfilename)
 
     def test_LoadUnknownXMLFile_CreatesEmptyListing(self):
         test_listing = self.simulate_xml_load('<Thingy> <Something/> </Thingy>')
@@ -51,5 +51,5 @@ class TestListing(unittest.TestCase):
     def simulate_xml_load(self, xml_data):
         with open(self.__tempfilename, 'w') as xmlfile:
             xmlfile.write(xml_data)
-        test_listing = listing.load_listing_file(self.__tempfilename)
+        test_listing = listing.load_listing_from_file(self.__tempfilename)
         return test_listing

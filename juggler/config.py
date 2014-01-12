@@ -91,7 +91,7 @@ class JugglerConfig:
         if root.tag != "Repositories":
             raise ConfigurationError("The root element in my configuration is '%s' instead of 'Repositories'" % root.tag)
         
-        self.local_repository = os.path.expanduser(root.find('Local').text)
+        self.local_repository = os.path.expanduser(root.find('Local').text.strip())
         if os.path.exists(self.local_repository):
             if not os.path.isdir(self.local_repository):
                 raise ConfigurationError("The path to the local repository I was given (%s) exists and is not a directory." % self.local_repository)
@@ -99,4 +99,4 @@ class JugglerConfig:
             os.mkdir(self.local_repository)
         
         for item in root.findall('Remote'):
-            self.__remote_repositories.append(item.text)
+            self.remote_repositories.append(item.text.strip())
