@@ -11,7 +11,7 @@ def create_argparser():
                                      version='v1.0',
                                      description='')
     
-    parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish'])
+    parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish', 'purge'])
     parser.add_argument('PATH', action='store', help='Path to the project to be juggled. Must be a directory containing a juggle.xml')
     parser.add_argument('--user_config', action='store', default='~/.juggler/global.xml', help='Specify a juggler configuration explicitly. Defaults to ~/.juggler/global.xml')
     parser.add_argument('--flavor', action='store', default='vanilla', help='Specify the flavor of the build. Only packages of this flavor will be fetched and only the package of this flavor will be published. Defaults to vanilla.')
@@ -20,8 +20,6 @@ def create_argparser():
     return parser
 
 def main():
-    command = ''
-    
     parser = create_argparser()
     args = parser.parse_args()
     
@@ -33,15 +31,18 @@ def main():
     project_config = config.ProjectConfig()
     project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggle.xml')))
     
-    if command == 'fetch':
+    # TODO Check local repository and create if not existing
+    
+    if args.COMMAND == 'fetch':
         dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
         dep_manager.deploy(project_config.required_packages, deployment_path, args.flavor)
-        # delete packages in local repo that are older than a month
         return 0;
-    elif command == 'publish':
-        # pack artifacts in tar file
-        # upload tar file to remote repo
+    elif args.COMMAND == 'publish':
+        # TODO pack artifacts in tar file
+        # TODO store tar file to local repo
         return 0;
+    elif args.COMMAND == 'purge':
+        # TODO delete packages in local repo that are older than a month
     else:
         return 0;
     return 0

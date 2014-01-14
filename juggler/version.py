@@ -36,6 +36,9 @@ class VersionInfo():
     
     def getRevision(self):
         return self.__revision
+    
+    def is_complete(self):
+        return not (self.__major is None or self.__minor is None or self.__revision is None)
 
 def parse_build_tag(string, match):
     build = None

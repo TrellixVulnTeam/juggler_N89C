@@ -14,19 +14,29 @@ class FileNotFound(Exception):
 class InvalidFile(Exception):
     pass
 
+class Package():
+    def __init__(self, version):
+        pass
+    
+    def get_build(self):
+        return None
+    
+    def get_name(self):
+        return None
+
 class Listing():
     def __init__(self):
-        self.__packages = []
+        self.__packages = {}
     
     def is_empty(self):
         return len(self.__packages) == 0
     
-    def add_package(self, name):
-        self.__packages.append(name)
+    def add_package(self, name, version):
+        self.__packages[name] = Package(version)
     
     def get_package(self, name):
         if name in self.__packages:
-            return name
+            return self.__packages[name]
         return None
 
 def load_listing_from_url(url):
@@ -37,7 +47,6 @@ def load_listing_from_url(url):
         raise FileNotFound('%s could not be accessed: %s' % (url, error))
     
     return load_listing(remotefile)
-    
 
 def load_listing_from_file(filename):
     if filename is None:

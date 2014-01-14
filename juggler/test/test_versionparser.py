@@ -21,38 +21,39 @@ class TestVersionInfo(unittest.TestCase):
         self.check_invalid_input(['v2.3-b4', 'v3.4-b5'])
     
     def test_PassEmpty_GetLatest(self):
-        self.check_version_parsing('', None, None, None)
+        self.check_version_parsing('', None, None, None, False)
     
     def test_PassNonNumericAsMajor_RaiseInvalidString(self):
         self.assertRaises(version.InvalidString, version.parse_version, 'four')
 
     def test_PassOnlyMajor_GetLatestOfThatMajor(self):
-        self.check_version_parsing('v3', 3, None, None)
+        self.check_version_parsing('v3', 3, None, None, False)
     
     def test_PassNonNumericAsMinor_RaiseInvalidString(self):
         self.check_invalid_string('v3.four')
         
     def test_PassMajorAndMinor_GetLatestRevision(self):
-        self.check_version_parsing('v4.2', 4, 2, None)
+        self.check_version_parsing('v4.2', 4, 2, None, False)
         
     def test_PassNonNumericAsMajorAndPassMinor_RaiseInvalidString(self):
         self.check_invalid_string('four.2')
         
     def test_PassFullVersion_GetSpecificVersion(self):
-        self.check_version_parsing('v5.8-b29', 5, 8, 29)
+        self.check_version_parsing('v5.8-b29', 5, 8, 29, True)
 
     def test_PassFullVersion_GetSpecificLocalVersion(self):
-        self.check_version_parsing('v5.8-local', 5, 8, 'local')
+        self.check_version_parsing('v5.8-local', 5, 8, 'local', True)
 
     def check_invalid_input(self, string):
         return self.assertRaises(version.InvalidType, version.parse_version, string)
 
-    def check_version_parsing(self, version_string, expected_major, expected_minor, expected_revision):
+    def check_version_parsing(self, version_string, expected_major, expected_minor, expected_revision, is_complete):
         version_request = version.parse_version(version_string)
         self.assertIsInstance(version_request, version.VersionInfo)
         self.assertEqual(version_request.getMajor(), expected_major)
         self.assertEqual(version_request.getMinor(), expected_minor)
         self.assertEqual(version_request.getRevision(), expected_revision)
+        self.assertEqual(version_request.is_complete(), is_complete)
 
     def check_invalid_string(self, string):
         return self.assertRaises(version.InvalidString, version.parse_version, string)

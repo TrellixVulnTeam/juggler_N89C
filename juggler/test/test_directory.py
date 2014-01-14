@@ -6,6 +6,7 @@ Created on 09.12.2013
 import unittest
 import os
 import tempfile
+from juggler import version
 from juggler import listing
 
 class TestListing(unittest.TestCase):
@@ -43,10 +44,15 @@ class TestListing(unittest.TestCase):
         test_listing = listing.Listing()
         self.assertEqual(test_listing.get_package('SomePackage'), None)
     
-    def test_LoadSinglePacketData_CreatesNonEmptyListing(self):
-        test_listing = self.simulate_xml_load('<Listing> <Package name="SomePackage"> <Build version="v1.0.0"/> </Package> </Listing>')
+    def get_single_packet_listing(self):
+        return '<Listing> <Package name="SomePackage"> <Build version="v1.0.0"/> </Package> </Listing>'
+    
+    def test_LoadSinglePacketData_PacketCanBeAccessed(self):
+        test_listing = self.simulate_xml_load(self.get_single_packet_listing())
         self.assertFalse(test_listing.is_empty())
-        self.assertNotEqual(test_listing.get_package('SomePackage'), None)
+        package = test_listing.get_package('SomePackage')
+        self.assertNotEqual(package, None)
+        self.assertEqual(package.get_build(), version.VersionInfo(1,0,0))
 
     def simulate_xml_load(self, xml_data):
         with open(self.__tempfilename, 'w') as xmlfile:

@@ -5,6 +5,7 @@ Created on 10.01.2014
 '''
 
 import listing
+import messages
 import os
 import urllib
 
@@ -17,10 +18,11 @@ class DependencyManager:
         self.__local_listing = listing.load_listing_from_file(os.path.join(local_repository, get_listing_filename()))
         self.__remote_listing = []
         for repo in remote_repositories:
+            print repo
             try:
-                self.__remote_listing.add(listing.load_listing_from_url(repo))
+                self.__remote_listing.append(listing.load_listing_from_url('/'.join([repo, get_listing_filename()])))
             except listing.FileNotFound as error:
-                pass
+                messages.UnableToAccessRemoteRepository(repo, error)
     
     def deploy(self, required_packages, target_directory, flavor):
         for package in required_packages:
