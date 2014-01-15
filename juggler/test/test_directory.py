@@ -45,14 +45,14 @@ class TestListing(unittest.TestCase):
         self.assertEqual(test_listing.get_package('SomePackage'), None)
     
     def get_single_packet_listing(self):
-        return '<Listing> <Package name="SomePackage"> <Build version="v1.0.0"/> </Package> </Listing>'
+        return '<Listing> <Package name="SomePackage"> <Build version="v1.0-b0"/> </Package> </Listing>'
     
     def test_LoadSinglePacketData_PacketCanBeAccessed(self):
         test_listing = self.simulate_xml_load(self.get_single_packet_listing())
         self.assertFalse(test_listing.is_empty())
         package = test_listing.get_package('SomePackage')
         self.assertNotEqual(package, None)
-        self.assertEqual(package.get_build(), version.VersionInfo(1,0,0))
+        self.assertEqual(str(package.get_version()), str(version.VersionInfo(1,0,0)))
 
     def simulate_xml_load(self, xml_data):
         with open(self.__tempfilename, 'w') as xmlfile:
