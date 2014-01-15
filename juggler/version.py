@@ -39,7 +39,22 @@ class VersionInfo():
     
     def is_complete(self):
         return not (self.__major is None or self.__minor is None or self.__revision is None)
-
+    
+    def __str__(self):
+        if self.getMajor() is None:
+            return 'latest'
+        textual = 'v%d' % self.getMajor()
+        if self.getMinor() is None:
+            return textual
+        textual += '.%d' % self.getMinor()
+        if self.getRevision() is None:
+            return textual
+        if self.getRevision() == 'local':
+            textual += '-' + self.getRevision()
+        else:
+            textual += '-b' + str(self.getRevision())
+        return textual
+    
 def parse_build_tag(string, match):
     build = None
     tag = match.group(3)
@@ -67,7 +82,7 @@ def parse_version(string):
         raise InvalidType('string argument of type %s instead of str' % type(string))
     string = str(string)
     
-    if string == '':
+    if string == '' or string == 'latest':
         return VersionInfo()
     
     build = None
