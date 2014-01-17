@@ -71,6 +71,8 @@ class TestVersionInfo(unittest.TestCase):
         self.assertTrue(righthand_version <= lefthand_version, '%s <= %s should be true' % (righthand_version, lefthand_version))
         self.assertFalse(lefthand_version != righthand_version, '%s != %s should be false' % (lefthand_version, righthand_version))
         self.assertFalse(righthand_version != lefthand_version, '%s != %s should be false' % (righthand_version, lefthand_version))
+        self.assertFalse(lefthand_version <> righthand_version, '%s <> %s should be false' % (lefthand_version, righthand_version))
+        self.assertFalse(righthand_version <> lefthand_version, '%s <> %s should be false' % (righthand_version, lefthand_version))
         
     def test_Comparison_CheckOrdering(self):
         self.check_ordering((2,0,0), (1,0,0))
@@ -78,7 +80,6 @@ class TestVersionInfo(unittest.TestCase):
         self.check_ordering((1,1,1), (1,1,0))
         self.check_ordering((1,1,0), (1,0,1))
         self.check_ordering((1,2,0), (1,1,'local'))
-        self.check_ordering((1,0,'local'), (1,0,5))
         self.check_ordering((1,0,'local'), (1,0,5))
     
     def check_ordering(self, higher, lower):
@@ -96,6 +97,8 @@ class TestVersionInfo(unittest.TestCase):
         self.assertFalse(lower_version == higher_version, '%s == %s should be false' % (lower_version, higher_version))
         self.assertTrue(higher_version != lower_version, '%s != %s should be true' % (higher_version, lower_version))
         self.assertTrue(lower_version != higher_version, '%s != %s should be true' % (lower_version, higher_version))
+        self.assertTrue(higher_version <> lower_version, '%s <> %s should be true' % (higher_version, lower_version))
+        self.assertTrue(lower_version <> higher_version, '%s <> %s should be true' % (lower_version, higher_version))
     
     def test_Matching(self):
         self.check_matching((1,2,3), (1,2,3))
