@@ -12,6 +12,8 @@ class InvalidString(Exception):
 class InvalidType(Exception):
     pass
 
+class InvalidMatch(Exception):
+    pass
 
 class VersionInfo():
     def __convert_int(self, number):
@@ -55,6 +57,56 @@ class VersionInfo():
             textual += '-b' + str(self.getRevision())
         return textual
     
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+        if not isinstance(other, VersionInfo):
+            return False
+        if other.getMajor() == self.getMajor() and other.getMinor() == self.getMinor() and other.getRevision() == self.getRevision():
+            return True
+        return False
+    
+    def __lt__(self, other):
+        if not isinstance(other, VersionInfo):
+            return NotImplemented
+        if self.__eq__(other):
+            return False
+        return other.__gt__(self)
+    
+    def __gt__(self, other):
+        if not isinstance(other, VersionInfo):
+            return NotImplemented
+        if self.getMajor() > other.getMajor():
+            return True
+        if self.getMajor() == other.getMajor() and self.getMinor() > other.getMinor():
+            return True
+        if self.getMajor() == other.getMajor() and self.getMinor() == other.getMinor() and self.getRevision() > other.getRevision():
+            return True
+        return False
+    
+    def __ge__(self, other):
+        if not isinstance(other, VersionInfo):
+            return NotImplemented
+        if self.__gt__(other) or self.__eq__(other):
+            return True
+        return False
+    
+    def matches(self, other):
+        if not isinstance(other, VersionInfo):
+            return False
+        if not other.is_complete():
+            raise InvalidMatch("Can only match against completely specified VersionInfo instances, you passed %s" % other)
+        if self == other:
+            return True
+        if self.getMajor() == None:
+            return True
+        if self.getMajor() == other.getMajor() and self.getMinor() == None:
+            return True
+        if self.getMajor() == other.getMajor() and self.getMinor() == other.getMinor() and self.getRevision() == None:
+            return True
+        return False
+
 def parse_build_tag(string, match):
     build = None
     tag = match.group(3)

@@ -27,9 +27,9 @@ class PackageInfo():
         return self.__name
 
 class PackageEntry():
-    def __init__(self, name, version):
+    def __init__(self, name, version_string):
         self.__name = name
-        self.__version = version
+        self.__version = version.parse_version(version_string)
 
     def get_name(self):
         return self.__name
@@ -80,7 +80,8 @@ def load_listing(source):
     listing = Listing()
     entry = xmltree.find('./Package')
     if entry is not None:
-        listing.add_package(entry.attrib['name'], version.parse_version(entry.find('./Build').attrib['version']))
+        for build in entry.findall('./Build'):
+            listing.add_package(entry.attrib['name'], build.attrib['version'])
 
     return listing
     

@@ -54,6 +54,16 @@ class TestListing(unittest.TestCase):
         self.assertNotEqual(package, None)
         self.assertEqual(str(package.get_version()), str(version.VersionInfo(1,0,0)))
 
+    def get_single_packet_multiple_build_listing(self):
+        return '<Listing> <Package name="SomePackage"> <Build version="v1.0-b0"/> <Build version="v1.0-b3"/> </Package> </Listing>'
+
+    def test_LoadSinglePacketMultipleBuildData_GetLatestWhenNoVersionSpecified(self):
+        test_listing = self.simulate_xml_load(self.get_single_packet_multiple_build_listing())
+        self.assertFalse(test_listing.is_empty())
+        package = test_listing.get_package('SomePackage')
+        self.assertNotEqual(package, None)
+        self.assertEqual(str(package.get_version()), str(version.VersionInfo(1,0,3)))
+
     def simulate_xml_load(self, xml_data):
         with open(self.__tempfilename, 'w') as xmlfile:
             xmlfile.write(xml_data)
