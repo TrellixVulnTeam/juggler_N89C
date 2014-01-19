@@ -15,21 +15,37 @@ class FileNotFound(Exception):
 class InvalidFile(Exception):
     pass
 
+class PackageNotAvailable(Exception):
+    pass
+
+class PackageVersionNotAvailable(Exception):
+    pass
+
 class PackageInfo():
-    def __init__(self, name, version):
+    def __init__(self, name):
+        self.__builds = []
         self.__name = name
-        self.__version = version
     
-    def get_entry(self):
-        return PackageEntry(self.__name, self.__version)
+    def add_build(self, build_version):
+        self.__builds.append(build_version)
     
+    def get_entry(self, match_version):
+        best_match = None
+        for build in self.__builds:
+            if match_version.matches(build):
+                if build > best_match:
+                    best_match = build
+        if best_match is None:
+            raise PackageVersionNotAvailable('I could not find version "%s" in the listing information for package "%s"' % (match_version, self.__name))
+        return PackageEntry(self.__name, best_match)
+        
     def get_name(self):
         return self.__name
 
 class PackageEntry():
-    def __init__(self, name, version_string):
+    def __init__(self, name, build_version):
         self.__name = name
-        self.__version = version.parse_version(version_string)
+        self.__version = build_version
 
     def get_name(self):
         return self.__name
@@ -44,13 +60,17 @@ class Listing():
     def is_empty(self):
         return len(self.__packages) == 0
     
-    def add_package(self, name, version):
-        self.__packages[name] = PackageInfo(name, version)
+    def add_package(self, name, version_string):
+        if not name in self.__packages:
+            self.__packages[name] = PackageInfo(name)
+        self.__packages[name].add_build(version.parse_version(version_string))
+        
     
-    def get_package(self, name):
+    def get_package(self, name, version=version.VersionInfo()):
         if name in self.__packages:
-            return self.__packages[name].get_entry()
-        return None
+            return self.__packages[name].get_entry(version)
+        else:
+            raise PackageNotAvailable('The package "%s" you requested from the listing is not available' % name)
 
 def load_listing_from_url(url):
     remotefile = None

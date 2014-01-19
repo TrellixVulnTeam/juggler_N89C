@@ -81,10 +81,16 @@ class TestVersionInfo(unittest.TestCase):
         self.check_ordering((1,1,0), (1,0,1))
         self.check_ordering((1,2,0), (1,1,'local'))
         self.check_ordering((1,0,'local'), (1,0,5))
+        self.check_ordering((1,0,0), None)
+    
+    def convert_to_version_test_instance(self, version_numbers):
+        if version_numbers is None:
+            return None
+        return version.VersionInfo(*version_numbers)
     
     def check_ordering(self, higher, lower):
-        higher_version = version.VersionInfo(*higher)
-        lower_version = version.VersionInfo(*lower)
+        higher_version = self.convert_to_version_test_instance(higher)
+        lower_version = self.convert_to_version_test_instance(lower)
         self.assertTrue(higher_version > lower_version, '%s > %s should be true' % (higher_version, lower_version))
         self.assertTrue(higher_version >= lower_version, '%s >= %s should be true' % (higher_version, lower_version))
         self.assertFalse(lower_version > higher_version, '%s > %s should be false' % (lower_version, higher_version))
