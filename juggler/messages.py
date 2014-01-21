@@ -5,6 +5,7 @@ Created on 13.01.2014
 '''
 
 indent_level = 0
+verbose = False
 
 def Indent():
     global indent_level
@@ -24,9 +25,9 @@ def GetIndent():
     return indent
 
 def VERBOSE(msg):
-    if msg is None:
-        return
-    print '%s%s' % (GetIndent(), msg)
+    global verbose
+    if verbose and not msg is None:
+        print '%s%s' % (GetIndent(), msg)
 
 def WARNING(msg, verbose=None):
     print "%sWarning: %s" % (GetIndent(), msg) 
@@ -36,3 +37,6 @@ def WARNING(msg, verbose=None):
 
 def UnableToAccessRemoteRepository(url, reason):
     WARNING("Could not access remote repository %s" % url, reason)
+
+def VerboseException(error):
+    VERBOSE(error)

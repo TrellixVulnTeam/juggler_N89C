@@ -42,6 +42,9 @@ class VersionInfo():
     def is_complete(self):
         return not (self.__major is None or self.__minor is None or self.__revision is None)
     
+    def is_local(self):
+        return self.__revision == 'local'
+    
     def __str__(self):
         if self.getMajor() is None:
             return 'latest'

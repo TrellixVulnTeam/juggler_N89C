@@ -46,6 +46,12 @@ class TestVersionInfo(unittest.TestCase):
 
     def test_PassFullVersion_GetSpecificLocalVersion(self):
         self.check_version_parsing('v5.8-local', 5, 8, 'local', True)
+    
+    def test_SpecifyLocalVersion_IsLocalReturnsTrue(self):
+        local_version = version.parse_version('v1.2-local')
+        self.assertTrue(local_version.is_local())
+        local_version = version.parse_version('v1.2-b3')
+        self.assertFalse(local_version.is_local())
 
     def test_CreateVersion_CheckStringConversion(self):
         self.check_version_tostring(None, None, None, 'latest')

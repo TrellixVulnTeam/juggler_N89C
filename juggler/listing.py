@@ -15,12 +15,6 @@ class FileNotFound(Exception):
 class InvalidFile(Exception):
     pass
 
-class PackageNotAvailable(Exception):
-    pass
-
-class PackageVersionNotAvailable(Exception):
-    pass
-
 class PackageInfo():
     def __init__(self, name):
         self.__builds = []
@@ -29,14 +23,16 @@ class PackageInfo():
     def add_build(self, build_version):
         self.__builds.append(build_version)
     
-    def get_entry(self, match_version):
+    def get_entry(self, match_version, ignore_local_build):
         best_match = None
         for build in self.__builds:
+            if ignore_local_build and build.is_local():
+                continue
             if match_version.matches(build):
                 if build > best_match:
                     best_match = build
         if best_match is None:
-            raise PackageVersionNotAvailable('I could not find version "%s" in the listing information for package "%s"' % (match_version, self.__name))
+            return None
         return PackageEntry(self.__name, best_match)
         
     def get_name(self):
@@ -66,11 +62,11 @@ class Listing():
         self.__packages[name].add_build(version.parse_version(version_string))
         
     
-    def get_package(self, name, version=version.VersionInfo()):
+    def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False):
         if name in self.__packages:
-            return self.__packages[name].get_entry(version)
+            return self.__packages[name].get_entry(version, ignore_local_build=ignore_local_build)
         else:
-            raise PackageNotAvailable('The package "%s" you requested from the listing is not available' % name)
+            return None
 
 def load_listing_from_url(url):
     remotefile = None
@@ -98,10 +94,8 @@ def load_listing(source):
         raise InvalidFile('parsing error in %s: %s' % (source, error))
 
     listing = Listing()
-    entry = xmltree.find('./Package')
-    if entry is not None:
+    package_entries = xmltree.findall('./Package')
+    for entry in package_entries:
         for build in entry.findall('./Build'):
             listing.add_package(entry.attrib['name'], build.attrib['version'])
-
     return listing
-    
