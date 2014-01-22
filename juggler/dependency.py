@@ -7,6 +7,7 @@ Created on 10.01.2014
 import listing
 import messages
 import os
+import urllib
 
 class RequiredPackageNotAvailable(Exception):
     pass
@@ -27,26 +28,33 @@ class DependencyManager:
     
     def deploy(self, required_packages, target_directory, ignore_local_builds):
         for package in required_packages:
-            source = self.find_best_source(package, ignore_local_builds)
-            if source is None:
+            source_info = self.find_best_source(package, ignore_local_builds)
+            if source_info is None:
                 raise RequiredPackageNotAvailable('None of the repositories known to me contain the required package %s with version %s' % (package['name'], package['version']))
-            # - if not found in local repo, download from remote repo
-            # - if found in local repo, touch
+            if source_info['source_type'] == 'local':
+                full_path = source_info['package'].get_path()
+                touched_file = open(full_path, 'wb')
+                touched_file.close()
+            else:
+                full_url = source_info['package'].get_path()
+                filename = source_info['package'].get_filename()
+                urllib.urlretrieve(full_url, os.path.join(self.__local_listing.get_root(), filename))
             # - unpack from local repo to project dependency folder
-            pass
         # create a file with include directives for gcc
         # remove unused dependencies from project dep folder
         pass
     
-    def find_best_source(self, package, flavor, ignore_local_builds):
-        best = {'version': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds),
-                'source': self.__local_listing}
+    def find_best_source(self, package, ignore_local_builds):
+        best = {'package': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds),
+                'source': self.__local_listing,
+                'source_type:': 'local'}
         for remote in self.__remote_listing:
-            candidate_version = remote.get_package(package['name'], package['version'], ignore_local_builds)
-            if best['version'] < candidate_version:
-                best['version'] = candidate_version
+            candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds)
+            if best['package'] < candidate_package:
+                best['package'] = candidate_package
                 best['source'] = remote
-        if best['version'] is None:
+                best['source_type'] = 'remote'
+        if best['package'] is None:
             return None
-        return best['source']
+        return best
         

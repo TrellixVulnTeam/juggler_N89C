@@ -22,6 +22,7 @@ class TestListing(unittest.TestCase):
     def test_AfterInit_ListingIsEmpty(self):
         directory = listing.Listing()
         self.assertTrue(directory.is_empty())
+        self.assertEqual(directory.get_root(), '.')
 
     def test_LoadMissingFile_RaisesFileNotFound(self):
         self.assertRaises(listing.FileNotFound, listing.load_listing_from_file, 'RandomNonExistentFile')

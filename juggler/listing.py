@@ -50,8 +50,9 @@ class PackageEntry():
         return self.__version
 
 class Listing():
-    def __init__(self):
+    def __init__(self, root = '.'):
         self.__packages = {}
+        self.__root = root
     
     def is_empty(self):
         return len(self.__packages) == 0
@@ -60,13 +61,15 @@ class Listing():
         if not name in self.__packages:
             self.__packages[name] = PackageInfo(name)
         self.__packages[name].add_build(version.parse_version(version_string))
-        
     
     def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False):
         if name in self.__packages:
             return self.__packages[name].get_entry(version, ignore_local_build=ignore_local_build)
         else:
             return None
+    
+    def get_root(self):
+        return self.__root
 
 def load_listing_from_url(url):
     remotefile = None
@@ -74,8 +77,9 @@ def load_listing_from_url(url):
         remotefile = urllib.urlopen(url)
     except IOError as error:
         raise FileNotFound('%s could not be accessed: %s' % (url, error))
-    
-    return load_listing(remotefile)
+    url_parts = url.split('/')
+    root = '/'.join(url_parts[:-1])
+    return load_listing(remotefile, root)
 
 def load_listing_from_file(filename):
     if filename is None:
@@ -84,16 +88,16 @@ def load_listing_from_file(filename):
     if not os.path.isfile(filename):
         raise FileNotFound('%s is a directory or missing' % filename)
     
-    return load_listing(filename)
+    return load_listing(filename, os.path.dirname(filename))
 
-def load_listing(source):
+def load_listing(source, root):
     xmltree = None
     try:
         xmltree = ElementTree.parse(source)
     except ElementTree.ParseError as error:
         raise InvalidFile('parsing error in %s: %s' % (source, error))
 
-    listing = Listing()
+    listing = Listing(root)
     package_entries = xmltree.findall('./Package')
     for entry in package_entries:
         for build in entry.findall('./Build'):
