@@ -8,6 +8,7 @@ import listing
 import messages
 import os
 import urllib
+import tarfile
 
 class RequiredPackageNotAvailable(Exception):
     pass
@@ -36,12 +37,16 @@ class DependencyManager:
                 touched_file = open(full_path, 'wb')
                 touched_file.close()
             else:
-                full_url = source_info['package'].get_path()
+                source_url = source_info['package'].get_path()
                 filename = source_info['package'].get_filename()
-                urllib.urlretrieve(full_url, os.path.join(self.__local_listing.get_root(), filename))
-            # - unpack from local repo to project dependency folder
-        # create a file with include directives for gcc
-        # remove unused dependencies from project dep folder
+                target_file = os.path.join(self.__local_listing.get_root(), filename)
+                messages.DownloadingPackage(source_url)
+                urllib.urlretrieve(source_url, target_file)
+            # TODO only extract packages that are newer than the dependency in the build
+            with tarfile.open(target_file, 'r') as archive:
+                archive.extractall(target_directory)
+        # TODO create a file with include directives (for CMake)
+        # TODO remove unused dependencies from project dep folder
         pass
     
     def find_best_source(self, package, ignore_local_builds):

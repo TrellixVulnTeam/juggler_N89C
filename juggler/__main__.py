@@ -38,15 +38,27 @@ def main():
         dep_manager.deploy(project_config.required_packages, deployment_path, args.no_local_builds)
         return 0
     elif args.COMMAND == 'publish':
+        package_manager
         # TODO pack artifacts in tar file
         # TODO store tar file to local repo
-        return 0;
+        return 0
     elif args.COMMAND == 'purge':
         # TODO delete packages in local repo that are older than a month
         return 0
+    elif args.COMMAND == 'build':
+        # TODO start build for current flavor
+        return 0
+    elif args.COMMAND == 'clean':
+        # TODO remove incremental build data
+        return 0
+    elif args.COMMAND == 'rebuild':
+        # TODO shortcut for clean & build
+        return 0
+    elif args.COMMAND == 'wrap':
+        # TODO shortcut for fetch & build & publish
+        return 0
     else:
         return 0
-    return 0
 
 
 if __name__ == "__main__":

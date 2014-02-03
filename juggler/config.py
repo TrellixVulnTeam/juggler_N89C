@@ -9,6 +9,7 @@ import os
 import version
 from xml.etree import ElementTree
 from juggler.version import InvalidString
+import publisher
 
 class ConfigurationError(Exception):
     pass
@@ -35,7 +36,7 @@ class ProjectConfig:
         self.name = None
         self.version = None
         self.required_packages = []
-        self.package_structure = None
+        self.publisher = None
     
     def load(self, filename):
         xmltree = ElementTree.ElementTree();
@@ -63,6 +64,7 @@ class ProjectConfig:
             self.required_packages.append(pack)
 
         # parse packaging information
+        self.publisher = publisher.Publisher(root.find('PackageStructure'))
 
 '''
 example juggler configuration

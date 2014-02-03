@@ -24,19 +24,28 @@ def GetIndent():
         i += 1
     return indent
 
+def INFO(msg, verbose=None):
+    print '%s%s' % (GetIndent(), msg) 
+    Indent()
+    VERBOSE(verbose)
+    Unindent()
+
 def VERBOSE(msg):
     global verbose
     if verbose and not msg is None:
         print '%s%s' % (GetIndent(), msg)
 
 def WARNING(msg, verbose=None):
-    print "%sWarning: %s" % (GetIndent(), msg) 
+    print '%sWarning: %s' % (GetIndent(), msg) 
     Indent()
     VERBOSE(verbose)
     Unindent()
 
 def UnableToAccessRemoteRepository(url, reason):
-    WARNING("Could not access remote repository %s" % url, reason)
+    WARNING('Could not access remote repository %s' % url, reason)
 
 def VerboseException(error):
     VERBOSE(error)
+
+def DownloadingPackage(url):
+    INFO('Downloading %s' % url)
