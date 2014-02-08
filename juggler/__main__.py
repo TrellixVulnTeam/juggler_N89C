@@ -59,7 +59,7 @@ def main():
         dep_manager.deploy(project_config.required_packages, deployment_path, args.no_local_builds)
         return 0
     elif args.COMMAND == 'publish':
-        package_manager
+        project_config.publisher.publish(global_config.local_repository)
         # TODO pack artifacts in tar file
         # TODO store tar file to local repo
         return 0

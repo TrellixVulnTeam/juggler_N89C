@@ -16,20 +16,35 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import os
+
+class PackedPathNotFound(Exception):
+    pass
+
+class Packer:
+    def __init__(self, source, target):
+        self.__source = source
+        self.__target = target
+    
+    def check(self):
+        return os.path.exists(self.__source)
+    
+    def get_source(self):
+        return self.__source
+
 class Publisher:
     def __init__(self, root_xml_element):
         self.__packers = []
-        
-        for bin_element in root_xml_element.findall('Binary'):
-            # files go into bin
-            pass
-        for lib_element in root_xml_element.findall('Library'):
-            # files go into lib
-            pass
-        for header_element in root_xml_element.findall('HeaderDirectory'):
-            # files go into include
-            pass
-        for source_element in root_xml_element.findall('SourceDirectory'):
-            # files go into src
-            pass
+        for path_element in root_xml_element.findall('Path'):
+            target_path = path_element.attrib['target']
+            source_path = path_element.text
+            self.__packers.append(Packer(source_path, target_path))
+    
+    def publish(self, target_repository):
+        for packer in self.__packers:
+            if not packer.check():
+                raise PackedPathNotFound('I could not find the path %s needed for publishing' % packer.get_source())
+        # Check local repository (create if not existing)
+        # Pack files
+        # Update repository listing
         

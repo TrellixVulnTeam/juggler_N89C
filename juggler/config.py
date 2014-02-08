@@ -37,10 +37,10 @@ example project configuration
             </Version> <!-- optional -->
         </Package>
     </Requires>
-    <PackageStructure>
-        <Library>libProject.a</Library>
-        <Header>project.h</Header>
-    </PackageStructure>
+    <Content>
+        <Path target=lib>build/libProject.a</Path>
+        <Path target=include>thisproject/project.h</Path>
+    </Content>
 </Project>
 '''
 class ProjectConfig:
@@ -76,7 +76,7 @@ class ProjectConfig:
             self.required_packages.append(pack)
 
         # parse packaging information
-        self.publisher = publisher.Publisher(root.find('PackageStructure'))
+        self.publisher = publisher.Publisher(root.find('Content'))
 
 '''
 example juggler configuration
