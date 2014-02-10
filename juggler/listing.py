@@ -27,6 +27,9 @@ class FileNotFound(Exception):
 class InvalidFile(Exception):
     pass
 
+class InvalidRepository(Exception):
+    pass
+
 class PackageInfo():
     def __init__(self, name, root):
         self.builds = []
@@ -47,7 +50,7 @@ class PackageInfo():
                     best_match = build
         if best_match is None:
             return None
-        return PackageEntry(self.__name, self.__root, best_match)
+        return PackageEntry(self.__name, self.__root, best_match, 'vanilla')
         
     def get_name(self):
         return self.__name
@@ -95,9 +98,9 @@ class Listing():
     
     def store(self, path):
         root = ElementTree.Element('Listing')
-        for package in self.__packages:
-            pack = ElementTree.SubElement(root, 'Package', {'name': package.get_name()})
-            for build in package.builds:
+        for package_name in self.__packages:
+            pack = ElementTree.SubElement(root, 'Package', {'name': package_name})
+            for build in self.__packages[package_name].builds:
                 ElementTree.SubElement(pack, 'Build', {'version': str(build)})
         tree = ElementTree.ElementTree(root)
         tree.write(os.path.join(path, get_listing_filename()), encoding="utf-8")
@@ -111,7 +114,7 @@ def create_empty_listing(path):
         listing_file.write('<Listing/>')
 
 def load_remote_listing(url):
-    remotename = '/'.join(url, get_listing_filename())
+    remotename = '/'.join([url, get_listing_filename()])
     remotefile = None
     try:
         remotefile = urllib.urlopen(remotename)
@@ -142,3 +145,11 @@ def load_listing(source, root):
         for build in entry.findall('./Build'):
             listing.add_package(entry.attrib['name'], build.attrib['version'])
     return listing
+
+def prepare_local_repository(target_repository):
+    if (not os.path.exists(target_repository)):
+        os.makedirs(target_repository)
+    elif (not os.path.isdir(target_repository)):
+        raise InvalidRepository('I can not prepare your local repository %s, the destination is not a directory.' % target_repository)
+    elif (not os.path.exists(os.path.join(target_repository, get_listing_filename()))):
+        create_empty_listing(target_repository)

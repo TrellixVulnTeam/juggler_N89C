@@ -27,8 +27,8 @@ class RequiredPackageNotAvailable(Exception):
 
 class DependencyManager:
     def __init__(self, local_repository, remote_repositories):
-        # download/read listings
-        self.__local_listing = listing.load_local_listing(os.path.join(local_repository, listing.get_listing_filename()))
+        listing.prepare_local_repository(local_repository)
+        self.__local_listing = listing.load_local_listing(local_repository)
         self.__remote_listing = []
         for repo in remote_repositories:
             try:
@@ -41,10 +41,9 @@ class DependencyManager:
             source_info = self.find_best_source(package, ignore_local_builds)
             if source_info is None:
                 raise RequiredPackageNotAvailable('None of the repositories known to me contain the required package %s with version %s' % (package['name'], package['version']))
+            target_file = None
             if source_info['source_type'] == 'local':
-                full_path = source_info['package'].get_path()
-                touched_file = open(full_path, 'wb')
-                touched_file.close()
+                target_file = os.path.join(source_info['package'].get_path(), source_info['package'].get_filename())
             else:
                 filename = source_info['package'].get_filename()
                 source_url = '/'.join(source_info['package'].get_path(), filename)
@@ -62,7 +61,7 @@ class DependencyManager:
     def find_best_source(self, package, ignore_local_builds):
         best = {'package': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds),
                 'source': self.__local_listing,
-                'source_type:': 'local'}
+                'source_type': 'local'}
         for remote in self.__remote_listing:
             candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds)
             if best['package'] < candidate_package:

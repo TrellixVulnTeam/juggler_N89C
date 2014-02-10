@@ -58,7 +58,7 @@ class ProjectConfig:
         if root.tag != "Project":
             raise ConfigurationError("The root element in your project configuration is '%s' instead of 'Project'" % root.tag)
         
-        self.name = root.find('Name')
+        self.name = root.find('Name').text
         if self.name is None or self.name == "":
             raise ConfigurationError("The name given in your project configuration (%s) is not valid." % self.local_repository)
         try:
@@ -72,14 +72,17 @@ class ProjectConfig:
         for element in root.findall('Requires/Package'):
             pack = {}
             pack['name'] = element.find('Name').text
-            pack_version = element.find('Version').text
-            if pack_version is None:
+            pack_version_element = element.find('Version')
+            pack_version = None
+            if pack_version_element is None:
                 pack_version = ''
+            else:
+                pack_version = pack_version.text 
             pack['version'] = version.parse_version(pack_version)
             self.required_packages.append(pack)
 
         # parse packaging information
-        self.publisher = publisher.Publisher(root.find('Content'))
+        self.publisher = publisher.Publisher(root.find('Content'), os.path.dirname(filename))
     
     def get_publishing_version(self, build_number):
         return version.VersionInfo( self.version.getMajor(), self.version.getMinor(), build_number)
@@ -92,6 +95,9 @@ example juggler configuration
     </Local>
     <Remote>
         http://readonly.url.to.server/somewhere
+    </Remote>
+    <Remote>
+        http://readonly.url.to.server/somewhereelse
     </Remote>
 </Repositories>
 '''

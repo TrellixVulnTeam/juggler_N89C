@@ -32,7 +32,7 @@ def create_argparser():
                                                     This program comes with ABSOLUTELY NO WARRANTY. This is free software,
                                                     and you are welcome to redistribute it under certain conditions.""")
     
-    parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish', 'purge'])
+    parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish'])
     parser.add_argument('PATH', action='store', help='Path to the project to be juggled. Must be a directory containing a juggle.xml')
     parser.add_argument('--build_number', action='store', default='local', help='Specify the build number to use when publishing, defaults to local')
     parser.add_argument('--user_config', action='store', default='~/.juggler/global.xml', help='Specify a juggler configuration explicitly. Defaults to ~/.juggler/global.xml')
@@ -53,8 +53,6 @@ def main():
     project_config = config.ProjectConfig()
     project_config.load(os.path.expanduser(os.path.join(args.PATH, 'juggle.xml')))
     
-    # TODO Check local repository and create if not existing
-    
     if args.COMMAND == 'fetch':
         dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
         dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds)
@@ -64,23 +62,6 @@ def main():
                                          project_config.name,
                                          project_config.get_publishing_version(args.build_number),
                                          args.flavor)
-        # TODO pack artifacts in tar file
-        # TODO store tar file to local repo
-        return 0
-    elif args.COMMAND == 'purge':
-        # TODO delete packages in local repo that are older than a month
-        return 0
-    elif args.COMMAND == 'build':
-        # TODO start build for current flavor
-        return 0
-    elif args.COMMAND == 'clean':
-        # TODO remove incremental build data
-        return 0
-    elif args.COMMAND == 'rebuild':
-        # TODO shortcut for clean & build
-        return 0
-    elif args.COMMAND == 'wrap':
-        # TODO shortcut for fetch & build & publish
         return 0
     else:
         return 0

@@ -132,7 +132,7 @@ def parse_build_tag(string, match):
         elif tag == 'local':
             build = 'local'
         else:
-            raise InvalidString('%s is not a valid version string' % string)
+            raise InvalidString('%s is not a valid version string, I am expecting something like v1.2-b34 or v5.6-local' % string)
     return build
 
 def parse_version(string):

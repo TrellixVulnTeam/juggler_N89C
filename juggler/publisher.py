@@ -23,9 +23,6 @@ import listing
 class PackedPathNotFound(Exception):
     pass
 
-class InvalidRepository(Exception):
-    pass
-
 class Packer:
     def __init__(self, source, target):
         self.__source = source
@@ -41,21 +38,12 @@ class Packer:
         tarfile.add(name = self.__source, arcname = self.__target)
 
 class Publisher:
-    def __init__(self, root_xml_element):
+    def __init__(self, root_xml_element, root_path):
         self.__packers = []
         for path_element in root_xml_element.findall('Path'):
-            target_path = path_element.attrib['target']
             source_path = path_element.text
-            self.__packers.append(Packer(source_path, target_path))
-    
-
-    def prepare_repository(self, target_repository):
-        if (not os.path.exists(target_repository)):
-            os.makedirs(target_repository)
-        elif (not os.path.isdir()):
-            raise InvalidRepository('I can not publish your project to %s, the destination is not a directory.' % target_repository)
-        elif (not os.path.exists(os.path.join(target_repository, listing.get_listing_filename()))):
-            listing.create_empty_listing(target_repository)
+            target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
+            self.__packers.append(Packer(os.path.join(root_path, source_path), target_path))
 
     def check_packers(self):
         for packer in self.__packers:
@@ -63,12 +51,13 @@ class Publisher:
                 raise PackedPathNotFound('I could not find the path %s needed for publishing' % packer.get_source())
 
     def publish(self, target_repository, name, version, flavor):
-        self.prepare_repository(target_repository)
+        listing.prepare_local_repository(target_repository)
         self.check_packers()
         local_listing = listing.load_local_listing(target_repository)
         new_entry = local_listing.add_package(name, str(version))
         archive_name = new_entry.get_filename()
-        artifact = tarfile.TarFile(os.path.join(target_repository, archive_name), mode='w:gz')
+        artifact = tarfile.TarFile.open(os.path.join(target_repository, archive_name), mode='w:gz')
         for packer in self.__packers:
             packer.pack_into(artifact)
+        artifact.close()
         local_listing.store(target_repository)
