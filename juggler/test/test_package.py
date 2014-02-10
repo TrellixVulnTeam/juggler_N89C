@@ -40,19 +40,19 @@ class Package():
         if name is None or name == '':
             raise IllegalArgument('I can not create a Package instance without a valid name and you passed me "%s"' % name)
         self.__name = name
-        self.__builds = []
+        self.builds = []
     
     def get_build(self):
-        if len(self.__builds) > 0:
-            return self.__builds[0]
+        if len(self.builds) > 0:
+            return self.builds[0]
         return None
     
     def has_builds(self):
-        return len(self.__builds) > 0;
+        return len(self.builds) > 0;
     
     def add_build(self, version_info):
         build = Build(self.__name, version_info)
-        self.__builds.append(build)
+        self.builds.append(build)
 
 class TestPackage(unittest.TestCase):
 

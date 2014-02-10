@@ -17,8 +17,13 @@
 """
 
 import os
+import tarfile
+import listing
 
 class PackedPathNotFound(Exception):
+    pass
+
+class InvalidRepository(Exception):
     pass
 
 class Packer:
@@ -31,6 +36,9 @@ class Packer:
     
     def get_source(self):
         return self.__source
+    
+    def pack_into(self, tarfile):
+        tarfile.add(name = self.__source, arcname = self.__target)
 
 class Publisher:
     def __init__(self, root_xml_element):
@@ -40,11 +48,27 @@ class Publisher:
             source_path = path_element.text
             self.__packers.append(Packer(source_path, target_path))
     
-    def publish(self, target_repository):
+
+    def prepare_repository(self, target_repository):
+        if (not os.path.exists(target_repository)):
+            os.makedirs(target_repository)
+        elif (not os.path.isdir()):
+            raise InvalidRepository('I can not publish your project to %s, the destination is not a directory.' % target_repository)
+        elif (not os.path.exists(os.path.join(target_repository, listing.get_listing_filename()))):
+            listing.create_empty_listing(target_repository)
+
+    def check_packers(self):
         for packer in self.__packers:
             if not packer.check():
                 raise PackedPathNotFound('I could not find the path %s needed for publishing' % packer.get_source())
-        # Check local repository (create if not existing)
-        # Pack files
-        # Update repository listing
-        
+
+    def publish(self, target_repository, name, version, flavor):
+        self.prepare_repository(target_repository)
+        self.check_packers()
+        local_listing = listing.load_local_listing(target_repository)
+        new_entry = local_listing.add_package(name, str(version))
+        archive_name = new_entry.get_filename()
+        artifact = tarfile.TarFile(os.path.join(target_repository, archive_name), mode='w:gz')
+        for packer in self.__packers:
+            packer.pack_into(artifact)
+        local_listing.store(target_repository)

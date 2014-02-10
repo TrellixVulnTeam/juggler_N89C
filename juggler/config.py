@@ -66,6 +66,9 @@ class ProjectConfig:
         except InvalidString as e:
             raise ConfigurationError("My parser complained (%s) when processing the version given in your project configuration." % e)
         
+        if self.version.getMajor() is None or self.version.getMinor() is None:
+            raise ConfigurationError("The version given for your project must specify major and minor revision, you specified %s." % self.version)
+        
         for element in root.findall('Requires/Package'):
             pack = {}
             pack['name'] = element.find('Name').text
@@ -77,6 +80,9 @@ class ProjectConfig:
 
         # parse packaging information
         self.publisher = publisher.Publisher(root.find('Content'))
+    
+    def get_publishing_version(self, build_number):
+        return version.VersionInfo( self.version.getMajor(), self.version.getMinor(), build_number)
 
 '''
 example juggler configuration

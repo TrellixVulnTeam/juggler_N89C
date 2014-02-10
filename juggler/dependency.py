@@ -25,17 +25,14 @@ import tarfile
 class RequiredPackageNotAvailable(Exception):
     pass
 
-def get_listing_filename():
-    return 'juggler_listing.xml'
-
 class DependencyManager:
     def __init__(self, local_repository, remote_repositories):
         # download/read listings
-        self.__local_listing = listing.load_listing_from_file(os.path.join(local_repository, get_listing_filename()))
+        self.__local_listing = listing.load_local_listing(os.path.join(local_repository, listing.get_listing_filename()))
         self.__remote_listing = []
         for repo in remote_repositories:
             try:
-                self.__remote_listing.append(listing.load_listing_from_url('/'.join([repo, get_listing_filename()])))
+                self.__remote_listing.append(listing.load_remote_listing('/'.join([repo, listing.get_listing_filename()])))
             except listing.FileNotFound as error:
                 messages.UnableToAccessRemoteRepository(repo, error)
     
@@ -49,17 +46,18 @@ class DependencyManager:
                 touched_file = open(full_path, 'wb')
                 touched_file.close()
             else:
-                source_url = source_info['package'].get_path()
                 filename = source_info['package'].get_filename()
+                source_url = '/'.join(source_info['package'].get_path(), filename)
                 target_file = os.path.join(self.__local_listing.get_root(), filename)
                 messages.DownloadingPackage(source_url)
                 urllib.urlretrieve(source_url, target_file)
+                self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()))
             # TODO only extract packages that are newer than the dependency in the build
             with tarfile.open(target_file, 'r') as archive:
                 archive.extractall(target_directory)
         # TODO create a file with include directives (for CMake)
         # TODO remove unused dependencies from project dep folder
-        pass
+        self.__local_listing.store(self.__local_listing.get_root())
     
     def find_best_source(self, package, ignore_local_builds):
         best = {'package': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds),

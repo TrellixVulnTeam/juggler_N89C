@@ -28,16 +28,18 @@ class InvalidFile(Exception):
     pass
 
 class PackageInfo():
-    def __init__(self, name):
-        self.__builds = []
+    def __init__(self, name, root):
+        self.builds = []
         self.__name = name
+        self.__root = root
     
     def add_build(self, build_version):
-        self.__builds.append(build_version)
+        self.builds.append(build_version)
+        return PackageEntry(self.__name, self.__root, build_version, 'vanilla')
     
     def get_entry(self, match_version, ignore_local_build):
         best_match = None
-        for build in self.__builds:
+        for build in self.builds:
             if ignore_local_build and build.is_local():
                 continue
             if match_version.matches(build):
@@ -45,21 +47,29 @@ class PackageInfo():
                     best_match = build
         if best_match is None:
             return None
-        return PackageEntry(self.__name, best_match)
+        return PackageEntry(self.__name, self.__root, best_match)
         
     def get_name(self):
         return self.__name
 
 class PackageEntry():
-    def __init__(self, name, build_version):
+    def __init__(self, name, root, build_version, flavor):
         self.__name = name
         self.__version = build_version
+        self.__root = root
+        self.__flavor = flavor
 
     def get_name(self):
         return self.__name
     
     def get_version(self):
         return self.__version
+    
+    def get_path(self):
+        return self.__root
+    
+    def get_filename(self):
+        return '%s_%s-%s.tar.gz' % (self.__name, self.__flavor, str(self.__version))
 
 class Listing():
     def __init__(self, root = '.'):
@@ -71,8 +81,8 @@ class Listing():
     
     def add_package(self, name, version_string):
         if not name in self.__packages:
-            self.__packages[name] = PackageInfo(name)
-        self.__packages[name].add_build(version.parse_version(version_string))
+            self.__packages[name] = PackageInfo(name, self.__root)
+        return self.__packages[name].add_build(version.parse_version(version_string))
     
     def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False):
         if name in self.__packages:
@@ -82,25 +92,42 @@ class Listing():
     
     def get_root(self):
         return self.__root
+    
+    def store(self, path):
+        root = ElementTree.Element('Listing')
+        for package in self.__packages:
+            pack = ElementTree.SubElement(root, 'Package', {'name': package.get_name()})
+            for build in package.builds:
+                ElementTree.SubElement(pack, 'Build', {'version': str(build)})
+        tree = ElementTree.ElementTree(root)
+        tree.write(os.path.join(path, get_listing_filename()), encoding="utf-8")
 
-def load_listing_from_url(url):
+def get_listing_filename():
+    return 'juggler_listing.xml'
+
+def create_empty_listing(path):
+    listing_path = os.path.join(path, get_listing_filename())
+    with open(listing_path, 'w') as listing_file:
+        listing_file.write('<Listing/>')
+
+def load_remote_listing(url):
+    remotename = '/'.join(url, get_listing_filename())
     remotefile = None
     try:
-        remotefile = urllib.urlopen(url)
+        remotefile = urllib.urlopen(remotename)
     except IOError as error:
-        raise FileNotFound('%s could not be accessed: %s' % (url, error))
-    url_parts = url.split('/')
-    root = '/'.join(url_parts[:-1])
-    return load_listing(remotefile, root)
+        raise FileNotFound('%s could not be accessed: %s' % (remotename, error))
+    return load_listing(remotefile, url)
 
-def load_listing_from_file(filename):
-    if filename is None:
+def load_local_listing(path):
+    if path is None:
         return
 
+    filename = os.path.join(path, get_listing_filename())
     if not os.path.isfile(filename):
         raise FileNotFound('%s is a directory or missing' % filename)
     
-    return load_listing(filename, os.path.dirname(filename))
+    return load_listing(filename, path)
 
 def load_listing(source, root):
     xmltree = None

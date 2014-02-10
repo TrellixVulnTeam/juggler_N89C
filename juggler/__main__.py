@@ -34,9 +34,10 @@ def create_argparser():
     
     parser.add_argument('COMMAND', action='store', choices=['fetch', 'publish', 'purge'])
     parser.add_argument('PATH', action='store', help='Path to the project to be juggled. Must be a directory containing a juggle.xml')
+    parser.add_argument('--build_number', action='store', default='local', help='Specify the build number to use when publishing, defaults to local')
     parser.add_argument('--user_config', action='store', default='~/.juggler/global.xml', help='Specify a juggler configuration explicitly. Defaults to ~/.juggler/global.xml')
     parser.add_argument('--flavor', action='store', default='vanilla', help='Specify the flavor of the build. Only packages of this flavor will be fetched and only the package of this flavor will be published. Defaults to vanilla.')
-    parser.add_argument('--no_local_builds', action='store_true', default=False, help='Prevents juggler from pulling local builds from repositories. Only regular builds will be considered.')
+    parser.add_argument('--do_not_use_local_builds', action='store_true', default=False, help='Prevents juggler from pulling local builds from repositories. Only regular builds will be considered.')
 
     return parser
 
@@ -56,10 +57,13 @@ def main():
     
     if args.COMMAND == 'fetch':
         dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
-        dep_manager.deploy(project_config.required_packages, deployment_path, args.no_local_builds)
+        dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds)
         return 0
     elif args.COMMAND == 'publish':
-        project_config.publisher.publish(global_config.local_repository)
+        project_config.publisher.publish(global_config.local_repository,
+                                         project_config.name,
+                                         project_config.get_publishing_version(args.build_number),
+                                         args.flavor)
         # TODO pack artifacts in tar file
         # TODO store tar file to local repo
         return 0
