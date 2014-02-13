@@ -103,6 +103,10 @@ class TestListing(unittest.TestCase):
                         <Build version="v2.1-b2"/>
                         <Build version="v1.2-b2"/>
                     </Package>
+                    <Package name="SomePackage" flavor="chocolate">
+                        <Build version="v1.0-b0"/>
+                        <Build version="v1.2-local"/>
+                    </Package>
                     <Package name="AnotherPackage">
                         <Build version="v0.0-b14"/>
                         <Build version="v0.2-b13"/>
@@ -123,10 +127,22 @@ class TestListing(unittest.TestCase):
         self.check_package_retrieval(test_listing, 'AnotherPackage', (0, 1, None), (0, 1, 15))
         self.check_package_retrieval(test_listing, 'AnotherPackage', (1, 0, 12), (1, 0, 12))
 
+    def test_LoadExtensiveListing_TestFlavoredPackageRetrieval(self):
+        test_listing = self.simulate_xml_load(self.get_extensive_build_listing())
+        self.check_package_retrieval_with_flavor(test_listing, 'SomePackage', (None, None, None), 'vanilla', (2, 1, 'local'))
+        self.check_package_retrieval_with_flavor(test_listing, 'SomePackage', (None, None, None), 'chocolate', (1, 2, 'local'))
+
+    def check_package_retrieval_with_flavor(self, listing, package_name, requested_numbers, flavor, expected_numbers):
+        package = listing.get_package(package_name, version.VersionInfo(*requested_numbers), flavor=flavor)
+        self.assertNotEqual(package, None, 'Got None when retrieving %s %s %s' % (package_name, version.VersionInfo(*requested_numbers), flavor))
+        self.assertEqual(package.get_name(), package_name)
+        self.assertEqual(package.get_version(), version.VersionInfo(*expected_numbers), 'Expected to get %s - instead got %s' % (version.VersionInfo(*expected_numbers), package.get_version()) )
+
     def check_package_retrieval(self, listing, package_name, requested_numbers, expected_numbers):
         package = listing.get_package(package_name, version.VersionInfo(*requested_numbers))
+        self.assertNotEqual(package, None)
         self.assertEqual(package.get_name(), package_name)
-        self.assertEqual(package.get_version(), version.VersionInfo(*expected_numbers))
+        self.assertEqual(package.get_version(), version.VersionInfo(*expected_numbers), 'Expected to get %s - instead got %s' % (version.VersionInfo(*expected_numbers), package.get_version()))
 
     def test_LoadExtensiveListing_TestIgnoringLocalBuilds(self):
         test_listing = self.simulate_xml_load(self.get_extensive_build_listing())

@@ -31,10 +31,11 @@ class InvalidRepository(Exception):
     pass
 
 class PackageInfo():
-    def __init__(self, name, root):
+    def __init__(self, name, root, flavor):
         self.builds = []
         self.__name = name
         self.__root = root
+        self.__flavor = flavor
     
     def add_build(self, build_version):
         self.builds.append(build_version)
@@ -54,6 +55,9 @@ class PackageInfo():
         
     def get_name(self):
         return self.__name
+
+    def get_flavor(self):
+        return self.__flavor
 
 class PackageEntry():
     def __init__(self, name, root, build_version, flavor):
@@ -82,14 +86,16 @@ class Listing():
     def is_empty(self):
         return len(self.__packages) == 0
     
-    def add_package(self, name, version_string):
-        if not name in self.__packages:
-            self.__packages[name] = PackageInfo(name, self.__root)
-        return self.__packages[name].add_build(version.parse_version(version_string))
+    def add_package(self, name, version_string, flavor='vanilla'):
+        key = '%s@%s' % (name, flavor)
+        if not key in self.__packages:
+            self.__packages[key] = PackageInfo(name, self.__root, flavor)
+        return self.__packages[key].add_build(version.parse_version(version_string))
     
-    def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False):
-        if name in self.__packages:
-            return self.__packages[name].get_entry(version, ignore_local_build=ignore_local_build)
+    def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False, flavor='vanilla'):
+        key = '%s@%s' % (name, flavor)
+        if key in self.__packages:
+            return self.__packages[key].get_entry(version, ignore_local_build=ignore_local_build)
         else:
             return None
     
@@ -98,9 +104,9 @@ class Listing():
     
     def store(self, path):
         root = ElementTree.Element('Listing')
-        for package_name in self.__packages:
-            pack = ElementTree.SubElement(root, 'Package', {'name': package_name})
-            for build in self.__packages[package_name].builds:
+        for key in self.__packages:
+            pack = ElementTree.SubElement(root, 'Package', {'name': self.__packages[key].get_name(), 'flavor': self.__packages[key].get_flavor()})
+            for build in self.__packages[key].builds:
                 ElementTree.SubElement(pack, 'Build', {'version': str(build)})
         tree = ElementTree.ElementTree(root)
         tree.write(os.path.join(path, get_listing_filename()), encoding="utf-8")
@@ -143,7 +149,10 @@ def load_listing(source, root):
     package_entries = xmltree.findall('./Package')
     for entry in package_entries:
         for build in entry.findall('./Build'):
-            listing.add_package(entry.attrib['name'], build.attrib['version'])
+            if 'flavor' in entry.attrib:
+                listing.add_package(entry.attrib['name'], build.attrib['version'], entry.attrib['flavor'])
+            else:
+                listing.add_package(entry.attrib['name'], build.attrib['version'])
     return listing
 
 def prepare_local_repository(target_repository):
