@@ -21,7 +21,6 @@ import os
 import version
 from xml.etree import ElementTree
 from version import InvalidString
-import publisher
 
 class ConfigurationError(Exception):
     pass
