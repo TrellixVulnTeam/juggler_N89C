@@ -17,7 +17,7 @@
 """
 
 import unittest
-from juggler import version
+from .. import version
 
 class TestVersionInfo(unittest.TestCase):
     def test_PassNothing_RaiseInvalidType(self):

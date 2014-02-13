@@ -17,8 +17,7 @@
 """
 
 import unittest
-import os
-from juggler import version
+from .. import version
 
 class IllegalArgument(Exception):
     pass

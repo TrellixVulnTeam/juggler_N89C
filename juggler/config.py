@@ -20,7 +20,7 @@ from exceptions import Exception
 import os
 import version
 from xml.etree import ElementTree
-from juggler.version import InvalidString
+from version import InvalidString
 import publisher
 
 class ConfigurationError(Exception):
