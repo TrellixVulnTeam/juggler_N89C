@@ -37,9 +37,9 @@ class DependencyManager:
             except listing.FileNotFound as error:
                 messages.UnableToAccessRemoteRepository(repo, error)
     
-    def deploy(self, required_packages, target_directory, ignore_local_builds):
+    def deploy(self, required_packages, target_directory, ignore_local_builds, flavor):
         for package in required_packages:
-            source_info = self.find_best_source(package, ignore_local_builds)
+            source_info = self.find_best_source(package, ignore_local_builds, flavor)
             if source_info is None:
                 raise RequiredPackageNotAvailable('None of the repositories known to me contain the required package %s with version %s' % (package['name'], package['version']))
             target_file = None
@@ -62,12 +62,12 @@ class DependencyManager:
         # TODO remove unused dependencies from project dep folder
         self.__local_listing.store(self.__local_listing.get_root())
     
-    def find_best_source(self, package, ignore_local_builds):
-        best = {'package': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds),
+    def find_best_source(self, package, ignore_local_builds, flavor):
+        best = {'package': self.__local_listing.get_package(package['name'], package['version'], ignore_local_builds, flavor),
                 'source': self.__local_listing,
                 'source_type': 'local'}
         for remote in self.__remote_listing:
-            candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds)
+            candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds, flavor)
             if best['package'] < candidate_package:
                 best['package'] = candidate_package
                 best['source'] = remote

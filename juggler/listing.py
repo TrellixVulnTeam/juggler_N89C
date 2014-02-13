@@ -39,7 +39,7 @@ class PackageInfo():
     
     def add_build(self, build_version):
         self.builds.append(build_version)
-        return PackageEntry(self.__name, self.__root, build_version, 'vanilla')
+        return PackageEntry(self.__name, self.__root, build_version, self.get_flavor())
     
     def get_entry(self, match_version, ignore_local_build):
         best_match = None
@@ -51,7 +51,7 @@ class PackageInfo():
                     best_match = build
         if best_match is None:
             return None
-        return PackageEntry(self.__name, self.__root, best_match, 'vanilla')
+        return PackageEntry(self.__name, self.__root, best_match, self.get_flavor())
         
     def get_name(self):
         return self.__name

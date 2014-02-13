@@ -57,14 +57,14 @@ def main():
     
     if args.COMMAND == 'fetch':
         dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
-        dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds)
+        dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds, args.flavor)
         return 0
     elif args.COMMAND == 'publish':
-        publisher = publisher.Publisher(project_config.content_node, args.SOURCE_PATH, args.BINARY_PATH)
-        publisher.publish(global_config.local_repository,
-                          project_config.name,
-                          project_config.get_publishing_version(args.build_number),
-                          args.flavor)
+        distributer = publisher.Publisher(project_config.content_node, args.SOURCE_PATH, args.BINARY_PATH)
+        distributer.publish(global_config.local_repository,
+                            project_config.name,
+                            project_config.get_publishing_version(args.build_number),
+                            args.flavor)
         return 0
     else:
         return 0

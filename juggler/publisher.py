@@ -41,11 +41,11 @@ class Publisher:
     def __init__(self, root_xml_element, source_directory, binary_directory):
         self.__packers = []
         for path_element in root_xml_element.findall('BinaryPath'):
-            source_path = path_element.text
+            source_path = path_element.text.strip()
             target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
             self.__packers.append(Packer(os.path.join(binary_directory, source_path), target_path))
         for path_element in root_xml_element.findall('SourcePath'):
-            source_path = path_element.text
+            source_path = path_element.text.strip()
             target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
             self.__packers.append(Packer(os.path.join(source_directory, source_path), target_path))
 
@@ -58,7 +58,7 @@ class Publisher:
         listing.prepare_local_repository(target_repository)
         self.check_packers()
         local_listing = listing.load_local_listing(target_repository)
-        new_entry = local_listing.add_package(name, str(version))
+        new_entry = local_listing.add_package(name, str(version), flavor)
         archive_name = new_entry.get_filename()
         artifact = tarfile.TarFile.open(os.path.join(target_repository, archive_name), mode='w:gz')
         for packer in self.__packers:
