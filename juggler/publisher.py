@@ -38,12 +38,16 @@ class Packer:
         tarfile.add(name = self.__source, arcname = self.__target)
 
 class Publisher:
-    def __init__(self, root_xml_element, root_path):
+    def __init__(self, root_xml_element, source_directory, binary_directory):
         self.__packers = []
-        for path_element in root_xml_element.findall('Path'):
+        for path_element in root_xml_element.findall('BinaryPath'):
             source_path = path_element.text
             target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
-            self.__packers.append(Packer(os.path.join(root_path, source_path), target_path))
+            self.__packers.append(Packer(os.path.join(binary_directory, source_path), target_path))
+        for path_element in root_xml_element.findall('SourcePath'):
+            source_path = path_element.text
+            target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
+            self.__packers.append(Packer(os.path.join(source_directory, source_path), target_path))
 
     def check_packers(self):
         for packer in self.__packers:

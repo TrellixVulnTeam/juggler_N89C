@@ -38,8 +38,8 @@ example project configuration
         </Package>
     </Requires>
     <Content>
-        <Path target=lib>build/libProject.a</Path>
-        <Path target=include>thisproject/project.h</Path>
+        <BinaryPath target=lib>build/libProject.a</Path>
+        <SourcePath target=include>thisproject/project.h</Path>
     </Content>
 </Project>
 '''
@@ -48,7 +48,7 @@ class ProjectConfig:
         self.name = None
         self.version = None
         self.required_packages = []
-        self.publisher = None
+        self.content_node = None
     
     def load(self, filename):
         xmltree = ElementTree.ElementTree();
@@ -81,8 +81,7 @@ class ProjectConfig:
             pack['version'] = version.parse_version(pack_version)
             self.required_packages.append(pack)
 
-        # parse packaging information
-        self.publisher = publisher.Publisher(root.find('Content'), os.path.dirname(filename))
+        self.content_node = root.find('Content')
     
     def get_publishing_version(self, build_number):
         return version.VersionInfo( self.version.getMajor(), self.version.getMinor(), build_number)
