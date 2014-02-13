@@ -21,6 +21,7 @@ import messages
 import os
 import urllib
 import tarfile
+import shutil
 
 class RequiredPackageNotAvailable(Exception):
     pass
@@ -52,8 +53,11 @@ class DependencyManager:
                 urllib.urlretrieve(source_url, target_file)
                 self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()))
             # TODO only extract packages that are newer than the dependency in the build
+            extract_dir = os.path.join(target_directory, package['name'])
+            if os.path.exists(extract_dir):
+                shutil.rmtree(extract_dir)
             with tarfile.open(target_file, 'r') as archive:
-                archive.extractall(target_directory)
+                archive.extractall(extract_dir)
         # TODO create a file with include directives (for CMake)
         # TODO remove unused dependencies from project dep folder
         self.__local_listing.store(self.__local_listing.get_root())
