@@ -27,7 +27,7 @@ import sys
 
 def create_argparser():
     parser = argparse.ArgumentParser(prog='juggler',
-                                     version='v1.0',
+                                     version='v0.2',
                                      description="""Juggler - Dirty dependency management and packaging for compiled code
                                                     Copyright (C) 2014  Christian Meyer
                                                     This program comes with ABSOLUTELY NO WARRANTY. This is free software,

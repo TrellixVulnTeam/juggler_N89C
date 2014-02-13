@@ -19,7 +19,7 @@
 from distutils.core import setup
 
 setup(name='Juggler',
-      version='0.1',
+      version='0.2',
       description='Dirty dependency management and packaging',
       author='Christian Meyer',
       author_email='konfuzzyus@gmail.com',
