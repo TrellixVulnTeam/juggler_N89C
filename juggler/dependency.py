@@ -68,7 +68,9 @@ class DependencyManager:
                 'source_type': 'local'}
         for remote in self.__remote_listing:
             candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds, flavor)
-            if best['package'] < candidate_package:
+            if candidate_package is None:
+		continue
+	    if best['package'] is None or (best['package'].get_version() < candidate_package.get_version()):
                 best['package'] = candidate_package
                 best['source'] = remote
                 best['source_type'] = 'remote'
