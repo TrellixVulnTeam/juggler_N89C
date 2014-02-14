@@ -33,7 +33,7 @@ class DependencyManager:
         self.__remote_listing = []
         for repo in remote_repositories:
             try:
-                self.__remote_listing.append(listing.load_remote_listing('/'.join([repo, listing.get_listing_filename()])))
+                self.__remote_listing.append(listing.load_remote_listing(repo))
             except listing.FileNotFound as error:
                 messages.UnableToAccessRemoteRepository(repo, error)
     
@@ -47,7 +47,7 @@ class DependencyManager:
                 target_file = os.path.join(source_info['package'].get_path(), source_info['package'].get_filename())
             else:
                 filename = source_info['package'].get_filename()
-                source_url = '/'.join(source_info['package'].get_path(), filename)
+                source_url = '/'.join([source_info['package'].get_path(), filename])
                 target_file = os.path.join(self.__local_listing.get_root(), filename)
                 messages.DownloadingPackage(source_url)
                 urllib.urlretrieve(source_url, target_file)
