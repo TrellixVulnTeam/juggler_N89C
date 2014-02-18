@@ -75,6 +75,9 @@ class PackageEntry():
     def get_path(self):
         return self.__root
     
+    def get_flavor(self):
+        return self.__flavor
+    
     def get_filename(self):
         return '%s_%s-%s.tar.gz' % (self.__name, self.__flavor, str(self.__version))
 

@@ -51,7 +51,7 @@ class DependencyManager:
                 target_file = os.path.join(self.__local_listing.get_root(), filename)
                 messages.DownloadingPackage(source_url)
                 urllib.urlretrieve(source_url, target_file)
-                self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()))
+                self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()), flavor = source_info['package'].get_flavor())
             # TODO only extract packages that are newer than the dependency in the build
             extract_dir = os.path.join(target_directory, package['name'])
             if os.path.exists(extract_dir):
