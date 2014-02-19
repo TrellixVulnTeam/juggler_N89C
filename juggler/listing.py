@@ -38,7 +38,8 @@ class PackageInfo():
         self.__flavor = flavor
     
     def add_build(self, build_version):
-        self.builds.append(build_version)
+        if not build_version in self.builds:
+            self.builds.append(build_version)
         return PackageEntry(self.__name, self.__root, build_version, self.get_flavor())
     
     def get_entry(self, match_version, ignore_local_build):
@@ -77,12 +78,12 @@ class PackageEntry():
     
     def get_flavor(self):
         return self.__flavor
-    
+
     def get_filename(self):
         return '%s_%s-%s.tar.gz' % (self.__name, self.__flavor, str(self.__version))
 
 class Listing():
-    def __init__(self, root = '.'):
+    def __init__(self, root='.'):
         self.__packages = {}
         self.__root = root
     

@@ -33,7 +33,7 @@ class DependencyManager:
         self.__remote_listing = []
         for repo in remote_repositories:
             try:
-                self.__remote_listing.append(listing.load_remote_listing('/'.join([repo, listing.get_listing_filename()])))
+                self.__remote_listing.append(listing.load_remote_listing(repo))
             except listing.FileNotFound as error:
                 messages.UnableToAccessRemoteRepository(repo, error)
     
@@ -47,11 +47,11 @@ class DependencyManager:
                 target_file = os.path.join(source_info['package'].get_path(), source_info['package'].get_filename())
             else:
                 filename = source_info['package'].get_filename()
-                source_url = '/'.join(source_info['package'].get_path(), filename)
+                source_url = '/'.join([source_info['package'].get_path(), filename])
                 target_file = os.path.join(self.__local_listing.get_root(), filename)
                 messages.DownloadingPackage(source_url)
                 urllib.urlretrieve(source_url, target_file)
-                self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()), flavor = source_info['package'].get_flavor())
+                self.__local_listing.add_package(source_info['package'].get_name(), str(source_info['package'].get_version()), source_info['package'].get_flavor())
             # TODO only extract packages that are newer than the dependency in the build
             extract_dir = os.path.join(target_directory, package['name'])
             if os.path.exists(extract_dir):
@@ -68,7 +68,9 @@ class DependencyManager:
                 'source_type': 'local'}
         for remote in self.__remote_listing:
             candidate_package = remote.get_package(package['name'], package['version'], ignore_local_builds, flavor)
-            if best['package'] < candidate_package:
+            if candidate_package is None:
+                continue
+            if best['package'] is None or (best['package'].get_version() < candidate_package.get_version()):
                 best['package'] = candidate_package
                 best['source'] = remote
                 best['source_type'] = 'remote'
