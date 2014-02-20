@@ -51,7 +51,10 @@ class ProjectConfig:
     
     def load(self, filename):
         xmltree = ElementTree.ElementTree();
-        xmltree.parse(filename)
+        try:
+            xmltree.parse(filename)
+        except IOError as e:
+            raise ConfigurationError("Could not load juggle.xml from source directory, I expect it to be in '%s'" % filename)
         
         root = xmltree.getroot()
         if root.tag != "Project":

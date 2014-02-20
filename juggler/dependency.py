@@ -43,6 +43,7 @@ class DependencyManager:
             if source_info is None:
                 raise RequiredPackageNotAvailable('None of the repositories known to me contain the required package %s with version %s' % (package['name'], package['version']))
             target_file = None
+            messages.ResolvedPackage(package, flavor, source_info['package'])
             if source_info['source_type'] == 'local':
                 target_file = os.path.join(source_info['package'].get_path(), source_info['package'].get_filename())
             else:

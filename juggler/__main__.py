@@ -24,6 +24,7 @@ import dependency
 import publisher
 import os
 import sys
+import messages
 
 def create_argparser():
     parser = argparse.ArgumentParser(prog='juggler',
@@ -48,27 +49,39 @@ def main():
     args = parser.parse_args()
     
     deployment_path = os.path.join(args.BINARY_PATH, '.juggler')
-    
-    global_config = config.JugglerConfig()
-    global_config.load(os.path.expanduser(args.user_config))
-    
-    project_config = config.ProjectConfig()
-    project_config.load(os.path.expanduser(os.path.join(args.SOURCE_PATH, 'juggle.xml')))
-    
+    try:
+        global_config = config.JugglerConfig()
+        global_config.load(os.path.expanduser(args.user_config))
+        
+        project_config = config.ProjectConfig()
+        project_config.load(os.path.expanduser(os.path.join(args.SOURCE_PATH, 'juggle.xml')))
+    except config.ConfigurationError as e:
+        messages.ConfigurationErrorDetected(e)
+        return -1
+        
     if args.COMMAND == 'fetch':
-        dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
-        dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds, args.flavor)
-        return 0
+        try:
+            messages.FetchingRequiredPackages(global_config.local_repository, global_config.remote_repositories)
+            dep_manager = dependency.DependencyManager(global_config.local_repository, global_config.remote_repositories)
+            dep_manager.deploy(project_config.required_packages, deployment_path, args.do_not_use_local_builds, args.flavor)
+        except dependency.RequiredPackageNotAvailable as e:
+            messages.FetchingFailed(e)
+            return -1
     elif args.COMMAND == 'publish':
-        distributer = publisher.Publisher(project_config.content_node, args.SOURCE_PATH, args.BINARY_PATH)
-        distributer.publish(global_config.local_repository,
-                            project_config.name,
-                            project_config.get_publishing_version(args.build_number),
-                            args.flavor)
-        return 0
+        try:
+            name = project_config.name
+            version = project_config.get_publishing_version(args.build_number)
+            flavor = args.flavor
+            repo = global_config.local_repository
+            messages.PublishingProject(name, version, flavor, repo)
+            distributer = publisher.Publisher(project_config.content_node, args.SOURCE_PATH, args.BINARY_PATH)
+            distributer.publish(repo, name, version, flavor)
+        except distributer.PackedPathNotFound as e:
+            messages.PublishingFailed(e)
+            return -1
     else:
-        return 0
-
+        pass
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

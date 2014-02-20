@@ -36,16 +36,16 @@ def GetIndent():
         i += 1
     return indent
 
+def VERBOSE(msg):
+    global verbose
+    if verbose and not msg is None:
+        print '%s%s' % (GetIndent(), msg)
+
 def INFO(msg, verbose=None):
     print '%s%s' % (GetIndent(), msg) 
     Indent()
     VERBOSE(verbose)
     Unindent()
-
-def VERBOSE(msg):
-    global verbose
-    if verbose and not msg is None:
-        print '%s%s' % (GetIndent(), msg)
 
 def WARNING(msg, verbose=None):
     print '%sWarning: %s' % (GetIndent(), msg) 
@@ -53,11 +53,52 @@ def WARNING(msg, verbose=None):
     VERBOSE(verbose)
     Unindent()
 
+def ERROR(msg, verbose=None):
+    print '%sERROR %s' % (GetIndent(), msg) 
+    Indent()
+    INFO(verbose)
+    Unindent()
+
 def UnableToAccessRemoteRepository(url, reason):
     WARNING('Could not access remote repository %s' % url, reason)
 
 def VerboseException(error):
     VERBOSE(error)
+
+def ConfigurationErrorDetected(e):
+    ERROR('juggler was unable to load your project configuration', '%s' % e)
+
+def FetchingRequiredPackages(local_repo, remote_repos):
+    INFO('Fetching required packages')
+    Indent()
+    VERBOSE('Repositories queried:')
+    Indent()
+    VERBOSE('Local - %s' % local_repo)
+    for repo in remote_repos:
+        VERBOSE('Remote - %s' % repo)
+    Unindent()
+    Unindent()
+
+def FetchingFailed(exception):
+    ERROR('Failed to fetch dependencies', '%s' % exception)
+
+def PublishingProject(name, version, flavor, local_repo):
+    INFO('Publishing project')
+    Indent()
+    INFO('Name - %s' % name)
+    INFO('Version - %s' % version)
+    INFO('Flavor - %s' % flavor)
+    VERBOSE('Publishing to %s' % local_repo)
+    Unindent()
+
+def PublishingFailed(exception):
+    ERROR('Failed to publish project', '%s' % exception)
+
+def ResolvedPackage(requested_package_info, flavor, resolved_package, source_type):
+    INFO('Resolved %s (%s) %s - using version %s' % (requested_package_info['name'], flavor, requested_package_info['version'], resolved_package.get_version()))
+    Indent()
+    VERBOSE('Using artifact from %s (%s)' % (resolved_package.get_path(), source_type))
+    Unindent()
 
 def DownloadingPackage(url):
     INFO('Downloading %s' % url)
