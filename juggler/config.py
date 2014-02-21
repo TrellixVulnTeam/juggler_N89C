@@ -38,7 +38,8 @@ example project configuration
     </Requires>
     <Content>
         <BinaryPath target=lib>build/libProject.a</Path>
-        <SourcePath target=include>thisproject/project.h</Path>
+        <SourcePath target=script>script/myscript.sh</Path>
+        <Headers target=include/myproject>thisproject/mypublicheaders</Headers>
     </Content>
 </Project>
 '''
