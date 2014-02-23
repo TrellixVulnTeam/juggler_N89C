@@ -52,7 +52,7 @@ class DependencyManager:
         if source_info is None:
             raise RequiredPackageNotAvailable('None of the repositories known to me contain the required package %s with version %s' % (package['name'], package['version']))
         else:
-            messages.ResolvedPackage(package, flavor, source_info['package'])
+            messages.ResolvedPackage(package, flavor, source_info['package'], source_info['source_type'])
         return source_info
 
     def find_best_source(self, package, ignore_local_builds, flavor):
