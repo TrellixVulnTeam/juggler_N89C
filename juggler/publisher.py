@@ -47,10 +47,11 @@ class HeaderPacker:
     
     def pack_into(self, tarfile):
         for (dirpath, _, filenames) in os.walk(self.__source_dir):
+            rel_dir = os.path.normpath(os.path.relpath(dirpath, self.__source_dir))
             for filename in filenames:
                 if not re.match('.*\.h$', filename) is None:
-                    full_src = os.path.join(self.__source_dir, dirpath, filename)
-                    full_tgt = os.path.join(self.__target_dir, dirpath, filename)
+                    full_src = os.path.join(self.__source_dir, rel_dir, filename)
+                    full_tgt = os.path.join(self.__target_dir, rel_dir, filename)
                     tarfile.add(name = full_src, arcname = full_tgt)
 
 class Publisher:
