@@ -67,7 +67,7 @@ class Publisher:
             self.__packers.append(FilePacker(os.path.join(source_directory, source_path), target_path))
         for path_element in root_xml_element.findall('Headers'):
             source_path = path_element.text.strip()
-            target_path = os.path.join(path_element.attrib['target'], os.path.basename(source_path))
+            target_path = path_element.attrib['target']
             self.__packers.append(HeaderPacker(os.path.join(source_directory, source_path), target_path))
         
     def check_packers(self):
