@@ -76,7 +76,7 @@ def main():
             messages.PublishingProject(name, version, flavor, repo)
             distributer = publisher.Publisher(project_config.content_node, args.SOURCE_PATH, args.BINARY_PATH)
             distributer.publish(repo, name, version, flavor)
-        except distributer.PackedPathNotFound as e:
+        except publisher.PackedPathNotFound as e:
             messages.PublishingFailed(e)
             return -1
     else:
