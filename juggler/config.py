@@ -80,7 +80,7 @@ class ProjectConfig:
             if pack_version_element is None:
                 pack_version = ''
             else:
-                pack_version = pack_version.text 
+                pack_version = pack_version_element.text 
             pack['version'] = version.parse_version(pack_version)
             self.required_packages.append(pack)
 
