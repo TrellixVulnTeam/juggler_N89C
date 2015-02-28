@@ -38,8 +38,8 @@ class TestVersionInfo(unittest.TestCase):
         return s.match(v)
 
     def test_matching(self):
-        self.assertTrue(self.do_match('latest', 'v1.2.3'))
+        self.assertTrue(self.do_match('latest', 'v1.2-0'))
         self.assertTrue(self.do_match('latest', '1.2.3'))
-        self.assertTrue(self.do_match('latest', '1.2-b4'))
-        self.assertTrue(self.do_match('latest', '1.2-local'))
+        self.assertTrue(self.do_match('', 'v1.2-b4'))
+        self.assertTrue(self.do_match('latest', 'v1.2-local'))
 

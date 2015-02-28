@@ -19,14 +19,15 @@
 from semantic_version import Version, Spec
 
 def parse_version(string):
-    cleaned = string.replace('v', '')
-    return Version.coerce(cleaned)
+    if string[0] == 'v':
+        return Version.coerce(string[1:])
+    return Version(string)
 
 def parse_spec(string):
     if string == '' or string == 'latest':
         return Spec('*')
     if string[0] == 'v':
-        cleaned = string.replace('v', '>=')
+        cleaned = '>=%s' % string[1:]
         spec = Spec(cleaned)
         v = spec.specs[0].spec
         if v.minor is None:
