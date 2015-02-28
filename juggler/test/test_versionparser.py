@@ -18,6 +18,7 @@
 
 import unittest
 from .. import version
+from semantic_version.base import Spec
 
 class TestVersionInfo(unittest.TestCase):
     def test_PassNothing_RaiseInvalidType(self):
@@ -66,11 +67,7 @@ class TestVersionInfo(unittest.TestCase):
         self.assertFalse(local_version.is_local())
 
     def test_CreateVersion_CheckStringConversion(self):
-        self.check_version_tostring(None, None, None, 'latest')
-        self.check_version_tostring(1, None, None, 'v1')
-        self.check_version_tostring(2, 1, None, 'v2.1')
-        self.check_version_tostring(3, 2, 1, 'v3.2-b1')
-        self.check_version_tostring(4, 5, 'local', 'v4.5-local')
+        self.check_version_tostring(4, 5, 'local', '4.5.0-local')
     
     def test_Comparison_CheckEquality(self):
         self.check_equality((1,2,3), (1,2,3))
@@ -99,7 +96,6 @@ class TestVersionInfo(unittest.TestCase):
         self.check_ordering((1,1,0), (1,0,1))
         self.check_ordering((1,2,0), (1,1,'local'))
         self.check_ordering((1,0,'local'), (1,0,5))
-        self.check_ordering((1,0,0), None)
     
     def convert_to_version_test_instance(self, version_numbers):
         if version_numbers is None:
@@ -125,27 +121,29 @@ class TestVersionInfo(unittest.TestCase):
         self.assertTrue(lower_version <> higher_version, '%s <> %s should be true' % (lower_version, higher_version))
     
     def test_Matching(self):
-        self.check_matching((1,2,3), (1,2,3))
-        self.check_matching((None,None,None), (1,2,3))
-        self.check_matching((1,None,None), (1,2,3))
-        self.check_matching((1,2,None), (1,2,3))
-        self.check_matching((2,1,None), (2,1,'local'))
-        self.check_not_matching((3,2,1), (1,2,3))
-        self.check_not_matching((3,None,None), (2,1,0))
-        self.check_not_matching((2,2,None), (2,1,0))
-        self.check_not_matching((3,2,1), (3,2,'local'))
-    
+        self.check_matching('>=1.2-3', (1,2,3))
+        self.check_matching('*', (1,2,3))
+        self.check_matching('>=1', (1,2,3))
+        self.check_matching('>=1.2', (1,2,3))
+        self.check_matching('>=2.1', (2,1,'local'))
+        self.check_not_matching('>=3.2-1', (1,2,3))
+        self.check_not_matching('>=3', (2,1,0))
+        self.check_not_matching('>=2.2', (2,1,0))
+        self.check_not_matching('>=3.2-2', (3,2,'local'))
+
     def test_MatchingDegenrateCases(self):
         test_version = version.VersionInfo(3,2,1)
         self.assertFalse(test_version.matches(None))
         self.assertRaises(version.InvalidMatch, test_version.matches, version.VersionInfo(3, None, None))
-    
-    def check_matching(self, reference, subject):
-        self.assertTrue(version.VersionInfo(*reference).matches(version.VersionInfo(*subject)))
-        
-    def check_not_matching(self, reference, subject):
-        self.assertFalse(version.VersionInfo(*reference).matches(version.VersionInfo(*subject)))
-    
+
+    def check_matching(self, spec, subject):
+        v = version.VersionInfo(*subject)
+        self.assertTrue(v.matches(Spec(spec)))
+
+    def check_not_matching(self, spec, subject):
+        v = version.VersionInfo(*subject)
+        self.assertFalse(v.matches(Spec(spec)))
+
     def check_invalid_input(self, string):
         return self.assertRaises(version.InvalidType, version.parse_version, string)
 

@@ -20,8 +20,7 @@ import unittest
 import os
 import shutil
 import tempfile
-from .. import version
-from .. import listing
+from juggler import version, listing
 
 class TestListing(unittest.TestCase):
     

@@ -25,4 +25,5 @@ setup(name='Juggler',
       author_email='konfuzzyus@gmail.com',
       url='http://github.com/Konfuzzyus/juggler',
       packages=['juggler'],
+      requires=['semantic_version (>2.3)']
      )

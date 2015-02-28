@@ -16,6 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+from semantic_version import Version, Spec
 import re
 
 class InvalidString(Exception):
@@ -28,99 +29,47 @@ class InvalidMatch(Exception):
     pass
 
 class VersionInfo():
-    def __convert_int(self, number):
-        converted = None
-        if not number is None:
-            converted = int(number)
-        return converted
-
-    def __init__(self, major=None, minor=None, revision=None):
-        self.__major = self.__convert_int(major) 
-        self.__minor = self.__convert_int(minor)
-        if revision == 'local':
-            self.__revision = 'local'
-        else:
-            self.__revision = self.__convert_int(revision) 
+    def __init__(self, major=0, minor=0, revision=0, actual_revision=0):
+        if isinstance(revision, tuple):
+            revision = str(revision[0])
+        vstr = '%d.%d.%d-%s' % (major, minor, actual_revision, revision)
+        self._version = Version.coerce(vstr)
 
     def getMajor(self):
-        return self.__major
-    
+        return self._version.major
+
     def getMinor(self):
-        return self.__minor
-    
+        return self._version.minor
+
     def getRevision(self):
-        return self.__revision
-    
+        return self._version.prerelease
+
     def is_complete(self):
-        return not (self.__major is None or self.__minor is None or self.__revision is None)
-    
+        return True
+
     def is_local(self):
-        return self.__revision == 'local'
-    
+        return self._version.prerelease == 0
+
     def __str__(self):
-        if self.getMajor() is None:
-            return 'latest'
-        textual = 'v%d' % self.getMajor()
-        if self.getMinor() is None:
-            return textual
-        textual += '.%d' % self.getMinor()
-        if self.getRevision() is None:
-            return textual
-        if self.getRevision() == 'local':
-            textual += '-' + self.getRevision()
-        else:
-            textual += '-b' + str(self.getRevision())
-        return textual
-    
+        return str(self._version)
+
     def __ne__(self, other):
-        return not self.__eq__(other)
+        return self._version.__ne__(other._version)
 
     def __eq__(self, other):
-        if not isinstance(other, VersionInfo):
-            return False
-        if other.getMajor() == self.getMajor() and other.getMinor() == self.getMinor() and other.getRevision() == self.getRevision():
-            return True
-        return False
-    
+        return self._version.__eq__(other._version)
+
     def __lt__(self, other):
-        if not isinstance(other, VersionInfo):
-            return NotImplemented
-        if self.__eq__(other):
-            return False
-        return other.__gt__(self)
-    
+        return self._version.__lt__(other._version)
+
     def __gt__(self, other):
-        if not isinstance(other, VersionInfo):
-            return NotImplemented
-        if self.getMajor() > other.getMajor():
-            return True
-        if self.getMajor() == other.getMajor() and self.getMinor() > other.getMinor():
-            return True
-        if self.getMajor() == other.getMajor() and self.getMinor() == other.getMinor() and self.getRevision() > other.getRevision():
-            return True
-        return False
-    
+        return self._version.__gt__(other._version)
+
     def __ge__(self, other):
-        if not isinstance(other, VersionInfo):
-            return NotImplemented
-        if self.__gt__(other) or self.__eq__(other):
-            return True
-        return False
-    
-    def matches(self, other):
-        if not isinstance(other, VersionInfo):
-            return False
-        if not other.is_complete():
-            raise InvalidMatch("Can only match against completely specified VersionInfo instances, you passed %s" % other)
-        if self == other:
-            return True
-        if self.getMajor() == None:
-            return True
-        if self.getMajor() == other.getMajor() and self.getMinor() == None:
-            return True
-        if self.getMajor() == other.getMajor() and self.getMinor() == other.getMinor() and self.getRevision() == None:
-            return True
-        return False
+        return self._version.__ge__(other._version)
+
+    def matches(self, spec):
+        return spec.match(self._version)
 
 def parse_build_tag(string, match):
     build = None
@@ -136,26 +85,6 @@ def parse_build_tag(string, match):
     return build
 
 def parse_version(string):
-    '''Parse a version request from a string.
-    All version parts that are undefined are interpreted as a request for latest. 
-
-    string - str representation of a version request
-    
-    returns a VersionInfo instance
-    raises InvalidString when there are components on the string that can not be parsed
-    raises InvalidType when the parameter is not a str
-    '''
-    if not isinstance(string, str):
-        raise InvalidType('string argument of type %s instead of str' % type(string))
-    string = str(string)
-    
-    if string == '' or string == 'latest':
-        return VersionInfo()
-    
-    build = None
-    match = re.match('v([0-9]+)(?:.([0-9]+))?(?:-([a-zA-Z0-9]+))?\Z', string)
-    if match:
-        build = parse_build_tag(string, match)
-        return VersionInfo(major=match.group(1), minor=match.group(2), revision=build)
-    
-    raise InvalidString('%s is not a valid version string' % string)
+    cleaned = string.replace('v', '')
+    version = Version.coerce(cleaned)
+    return VersionInfo(version.major, version.minor, version.prerelease, version.patch)
