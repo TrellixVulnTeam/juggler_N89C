@@ -20,7 +20,6 @@ from exceptions import Exception
 import os
 import version
 from xml.etree import ElementTree
-from version import InvalidString
 
 class ConfigurationError(Exception):
     pass
@@ -66,7 +65,7 @@ class ProjectConfig:
             raise ConfigurationError("The name given in your project configuration (%s) is not valid." % self.local_repository)
         try:
             self.version = version.parse_version(root.find('Version').text)
-        except InvalidString as e:
+        except ValueError as e:
             raise ConfigurationError("My parser complained (%s) when processing the version given in your project configuration." % e)
         
         if self.version.getMajor() is None or self.version.getMinor() is None:
@@ -81,13 +80,13 @@ class ProjectConfig:
                 pack_version = ''
             else:
                 pack_version = pack_version_element.text 
-            pack['version'] = version.parse_version(pack_version)
+            pack['version'] = version.parse_spec(pack_version)
             self.required_packages.append(pack)
 
         self.content_node = root.find('Content')
     
     def get_publishing_version(self, build_number):
-        return version.VersionInfo( self.version.getMajor(), self.version.getMinor(), build_number)
+        return version.parse_version('%s-%d' % (version, build_number))
 
 '''
 example juggler configuration
