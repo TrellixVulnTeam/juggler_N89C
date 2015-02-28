@@ -63,7 +63,8 @@ class TestListing(unittest.TestCase):
         test_listing = self.simulate_xml_load(self.get_single_packet_listing())
         self.assertFalse(test_listing.is_empty())
         package = test_listing.get_package('SomePackage')
-        self.assertEqual(package.get_version(), version.VersionInfo(1, 0, 0))
+        self.assertEqual(package.get_version(),
+                         version.parse_version('v1.0-b0'))
 
     def get_single_packet_multiple_build_listing(self):
         return '<Listing> <Package name="SomePackage"> <Build version="v1.0-b0"/> <Build version="v1.0-b3"/> </Package> </Listing>'
@@ -71,26 +72,34 @@ class TestListing(unittest.TestCase):
     def test_LoadSinglePacketMultipleBuildData_GetLatestWhenNoVersionIsPassed(self):
         test_listing = self.simulate_xml_load(self.get_single_packet_multiple_build_listing())
         package = test_listing.get_package('SomePackage')
-        self.assertEqual(package.get_version(), version.VersionInfo(1, 0, 3))
+        self.assertEqual(package.get_version(),
+                         version.parse_version('v1.0-b3'))
 
     def test_LoadSinglePacketMultipleBuildData_GetLatestWhenUnspecifiedVersionIsPassed(self):
         test_listing = self.simulate_xml_load(self.get_single_packet_multiple_build_listing())
-        package = test_listing.get_package('SomePackage', version.VersionInfo())
-        self.assertEqual(package.get_version(), version.VersionInfo(1, 0, 3))
+        package = test_listing.get_package('SomePackage',
+                                           version.parse_spec('latest'))
+        self.assertEqual(package.get_version(),
+                         version.parse_version('v1.0-b3'))
         
     def test_LoadSinglePacketMultipleBuildData_RequestNonexistentVersionGetNone(self):
         test_listing = self.simulate_xml_load(self.get_single_packet_multiple_build_listing())
-        self.assertEqual(test_listing.get_package('SomePackage', version.VersionInfo(3, 3, 3)), None)
+        self.assertEqual(test_listing.get_package('SomePackage',
+                                                  version.parse_spec('v3.3-b3')), None)
 
     def test_LoadSinglePacketMultipleBuildData_GetExactVersionWhenExactVersionIsPassed(self):
         test_listing = self.simulate_xml_load(self.get_single_packet_multiple_build_listing())
         self.assertFalse(test_listing.is_empty())
-        package_1_0_0 = test_listing.get_package('SomePackage', version.VersionInfo(1, 0, 0))
-        package_1_0_3 = test_listing.get_package('SomePackage', version.VersionInfo(1, 0, 3))
+        package_1_0_0 = test_listing.get_package('SomePackage',
+                                                 version.parse_spec('v1.0-b0'))
+        package_1_0_3 = test_listing.get_package('SomePackage',
+                                                 version.parse_spec('v1.0-b3'))
         self.assertNotEqual(package_1_0_0, None)
         self.assertNotEqual(package_1_0_3, None)
-        self.assertEqual(package_1_0_0.get_version(), version.VersionInfo(1, 0, 0))
-        self.assertEqual(package_1_0_3.get_version(), version.VersionInfo(1, 0, 3))
+        self.assertEqual(package_1_0_0.get_version(),
+                         version.parse_version('v1.0-b0'))
+        self.assertEqual(package_1_0_3.get_version(),
+                         version.parse_version('v1.0-b3'))
 
     def get_extensive_build_listing(self):
         return '''<Listing> 
@@ -117,36 +126,55 @@ class TestListing(unittest.TestCase):
 
     def test_LoadExtensiveListing_TestPackageRetrieval(self):
         test_listing = self.simulate_xml_load(self.get_extensive_build_listing())
-        self.check_package_retrieval(test_listing, 'SomePackage', (None, None, None), (2, 1, 'local'))
-        self.check_package_retrieval(test_listing, 'SomePackage', (1, None, None), (1, 2, 2))
-        self.check_package_retrieval(test_listing, 'SomePackage', (1, 1, None), (1, 1, 2))
-        self.check_package_retrieval(test_listing, 'SomePackage', (1, 0, 0), (1, 0, 0))
-        self.check_package_retrieval(test_listing, 'AnotherPackage', (None, None, None), (1, 0, 16))
-        self.check_package_retrieval(test_listing, 'AnotherPackage', (1, None, None), (1, 0, 16))
-        self.check_package_retrieval(test_listing, 'AnotherPackage', (0, 1, None), (0, 1, 15))
-        self.check_package_retrieval(test_listing, 'AnotherPackage', (1, 0, 12), (1, 0, 12))
+        self.check_package_retrieval(test_listing, 'SomePackage', 'latest', 'v2.1-local')
+        self.check_package_retrieval(test_listing, 'SomePackage', 'v1', 'v1.2-b2')
+        self.check_package_retrieval(test_listing, 'SomePackage', 'v1.1', 'v1.1-b2')
+        self.check_package_retrieval(test_listing, 'SomePackage', 'v1.0', 'v1.0-b3')
+        self.check_package_retrieval(test_listing, 'AnotherPackage', 'latest', 'v1.0-b16')
+        self.check_package_retrieval(test_listing, 'AnotherPackage', 'v1', 'v1.0-b16')
+        self.check_package_retrieval(test_listing, 'AnotherPackage', 'v0.1', 'v0.1-b15')
+        self.check_package_retrieval(test_listing, 'AnotherPackage', 'v1.0', 'v1.0-b16')
 
     def test_LoadExtensiveListing_TestFlavoredPackageRetrieval(self):
         test_listing = self.simulate_xml_load(self.get_extensive_build_listing())
-        self.check_package_retrieval_with_flavor(test_listing, 'SomePackage', (None, None, None), 'vanilla', (2, 1, 'local'))
-        self.check_package_retrieval_with_flavor(test_listing, 'SomePackage', (None, None, None), 'chocolate', (1, 2, 'local'))
+        self.check_package_retrieval_with_flavor(test_listing,
+                                                 'SomePackage',
+                                                 'latest',
+                                                 'vanilla',
+                                                 'v2.1-local')
+        self.check_package_retrieval_with_flavor(test_listing,
+                                                 'SomePackage',
+                                                 'latest',
+                                                 'chocolate',
+                                                 'v1.2-local')
 
-    def check_package_retrieval_with_flavor(self, listing, package_name, requested_numbers, flavor, expected_numbers):
-        package = listing.get_package(package_name, version.VersionInfo(*requested_numbers), flavor=flavor)
-        self.assertNotEqual(package, None, 'Got None when retrieving %s %s %s' % (package_name, version.VersionInfo(*requested_numbers), flavor))
+    def check_package_retrieval_with_flavor(self, listing, package_name, requested_version, flavor, expected_version):
+        package = listing.get_package(package_name,
+                                      version.parse_spec(requested_version),
+                                      flavor=flavor)
+        self.assertIsNotNone(package, 'Got None when retrieving %s %s %s' % (package_name, requested_version, flavor))
         self.assertEqual(package.get_name(), package_name)
-        self.assertEqual(package.get_version(), version.VersionInfo(*expected_numbers), 'Expected to get %s - instead got %s' % (version.VersionInfo(*expected_numbers), package.get_version()) )
+        self.assertEqual(package.get_version(),
+                         version.parse_version(expected_version),
+                         'Expected to get %s - instead got %s' % (expected_version,
+                                                                  package.get_version()))
 
-    def check_package_retrieval(self, listing, package_name, requested_numbers, expected_numbers):
-        package = listing.get_package(package_name, version.VersionInfo(*requested_numbers))
+    def check_package_retrieval(self, listing, package_name, requested_version, expected_version):
+        package = listing.get_package(package_name, version.parse_spec(requested_version))
         self.assertNotEqual(package, None)
         self.assertEqual(package.get_name(), package_name)
-        self.assertEqual(package.get_version(), version.VersionInfo(*expected_numbers), 'Expected to get %s - instead got %s' % (version.VersionInfo(*expected_numbers), package.get_version()))
+        self.assertEqual(package.get_version(),
+                         version.parse_version(expected_version),
+                         'Expected to get %s - instead got %s' % (expected_version,
+                                                                  package.get_version()))
 
     def test_LoadExtensiveListing_TestIgnoringLocalBuilds(self):
         test_listing = self.simulate_xml_load(self.get_extensive_build_listing())
-        package = test_listing.get_package('SomePackage', version.VersionInfo(None, None, None), ignore_local_build=True)
-        self.assertEqual(package.get_version(), version.VersionInfo(2, 1, 2))
+        package = test_listing.get_package('SomePackage',
+                                           version.parse_spec('latest'),
+                                           ignore_local_build=True)
+        self.assertEqual(package.get_version(),
+                         version.parse_version('v2.1-b2'))
 
     def simulate_xml_load(self, xml_data):
         with open(os.path.join(self.__tempdir, 'juggler_listing.xml'), 'w') as xmlfile:

@@ -20,6 +20,7 @@ import os
 import urllib
 import version
 from xml.etree import ElementTree
+from semantic_version import Version, Spec
 
 class FileNotFound(Exception):
     pass
@@ -38,17 +39,18 @@ class PackageInfo():
         self.__flavor = flavor
     
     def add_build(self, build_version):
+        assert isinstance(build_version, Version)
         if not build_version in self.builds:
             self.builds.append(build_version)
         return PackageEntry(self.__name, self.__root, build_version, self.get_flavor())
     
-    def get_entry(self, match_version, ignore_local_build):
+    def get_entry(self, spec, ignore_local_build):
         best_match = None
         for build in self.builds:
-            if ignore_local_build and build.is_local():
+            if ignore_local_build and build.prerelease == (u'local',):
                 continue
-            if match_version.matches(build):
-                if build > best_match:
+            if spec.match(build):
+                if build > best_match or best_match == None:
                     best_match = build
         if best_match is None:
             return None
@@ -96,10 +98,11 @@ class Listing():
             self.__packages[key] = PackageInfo(name, self.__root, flavor)
         return self.__packages[key].add_build(version.parse_version(version_string))
     
-    def get_package(self, name, version=version.VersionInfo(), ignore_local_build=False, flavor='vanilla'):
+    def get_package(self, name, spec=version.parse_spec('*'), ignore_local_build=False, flavor='vanilla'):
+        assert isinstance(spec, Spec)
         key = '%s@%s' % (name, flavor)
         if key in self.__packages:
-            return self.__packages[key].get_entry(version, ignore_local_build=ignore_local_build)
+            return self.__packages[key].get_entry(spec, ignore_local_build=ignore_local_build)
         else:
             return None
     

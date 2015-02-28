@@ -17,74 +17,23 @@
 """
 
 from semantic_version import Version, Spec
-import re
-
-class InvalidString(Exception):
-    pass
-
-class InvalidType(Exception):
-    pass
-
-class InvalidMatch(Exception):
-    pass
-
-class VersionInfo():
-    def __init__(self, major=0, minor=0, revision=0, actual_revision=0):
-        if isinstance(revision, tuple):
-            revision = str(revision[0])
-        vstr = '%d.%d.%d-%s' % (major, minor, actual_revision, revision)
-        self._version = Version.coerce(vstr)
-
-    def getMajor(self):
-        return self._version.major
-
-    def getMinor(self):
-        return self._version.minor
-
-    def getRevision(self):
-        return self._version.prerelease
-
-    def is_complete(self):
-        return True
-
-    def is_local(self):
-        return self._version.prerelease == 0
-
-    def __str__(self):
-        return str(self._version)
-
-    def __ne__(self, other):
-        return self._version.__ne__(other._version)
-
-    def __eq__(self, other):
-        return self._version.__eq__(other._version)
-
-    def __lt__(self, other):
-        return self._version.__lt__(other._version)
-
-    def __gt__(self, other):
-        return self._version.__gt__(other._version)
-
-    def __ge__(self, other):
-        return self._version.__ge__(other._version)
-
-    def matches(self, spec):
-        return spec.match(self._version)
-
-def parse_build_tag(string, match):
-    build = None
-    tag = match.group(3)
-    if not tag is None:
-        number_match = re.match('b([0-9]+)\Z', tag)
-        if number_match:
-            build = number_match.group(1)
-        elif tag == 'local':
-            build = 'local'
-        else:
-            raise InvalidString('%s is not a valid version string, I am expecting something like v1.2-b34 or v5.6-local' % string)
-    return build
 
 def parse_version(string):
     cleaned = string.replace('v', '')
-    version = Version.coerce(cleaned)
-    return VersionInfo(version.major, version.minor, version.prerelease, version.patch)
+    return Version.coerce(cleaned)
+
+def parse_spec(string):
+    if string == '' or string == 'latest':
+        return Spec('*')
+    if string[0] == 'v':
+        cleaned = string.replace('v', '>=')
+        spec = Spec(cleaned)
+        v = spec.specs[0].spec
+        if v.minor is None:
+            return Spec('%s,<%d' % (cleaned, v.major + 1))
+        elif not v.prerelease is None:
+            return Spec('==%s' % v)
+        else:
+            return Spec('%s,<%d.%d' % (cleaned, v.major, v.minor + 1))
+        
+    return Spec(string)

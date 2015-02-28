@@ -25,11 +25,11 @@ class IllegalArgument(Exception):
 class Build():
     def __init__(self, name, version, flavor=None):
         if name is None or name == '':
-            raise IllegalArgument('I can not create a Build instance using an invalid name and you passed me "%s"' % name)
+            raise IllegalArgument('I can not create a Build instance using an invalid name, you passed me "%s"' % name)
         if version is None:
-            raise IllegalArgument('I can not create a Build instance using an invalid version andyou passed me "%s"' % version)
-        if not version.is_complete():
-            raise IllegalArgument('I can not create a Build instance with a partially specified version and you passed me "%s"' % version)
+            raise IllegalArgument('I can not create a Build instance using an invalid version, you passed me "%s"' % version)
+        if version.partial:
+            raise IllegalArgument('I can not create a Build instance with a partially specified version, you passed me "%s"' % version)
         self.name = name
         self.version = version
         self.flavor = flavor
@@ -37,7 +37,7 @@ class Build():
 class Package():
     def __init__(self, name):
         if name is None or name == '':
-            raise IllegalArgument('I can not create a Package instance without a valid name and you passed me "%s"' % name)
+            raise IllegalArgument('I can not create a Package instance without a valid name, you passed me "%s"' % name)
         self.__name = name
         self.builds = []
     
@@ -69,11 +69,11 @@ class TestPackage(unittest.TestCase):
 
     def test_AddBuild_IsNotEmpty(self):
         package = Package('TestPackage')
-        package.add_build(version.VersionInfo(1, 0, 0))
+        package.add_build(version.parse_version('v1.0.b0'))
         self.assertTrue(package.has_builds())
         
     def test_GetLatestBuildWhenSingleBuildAvailable_ReturnThatBuild(self):
         package = Package('TestPackage')
-        expected_version = version.VersionInfo(1, 0, 0)
+        expected_version = version.parse_version('v1.0.b0')
         package.add_build(expected_version)
         self.assertEqual(package.get_build().version, expected_version)
