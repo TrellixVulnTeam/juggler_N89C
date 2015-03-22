@@ -37,7 +37,7 @@ class TestVersionInfo(unittest.TestCase):
         v = version.parse_version(vers)
         return s.match(v)
 
-    def test_matching(self):
+    def test_match_latest(self):
         self.assertTrue(self.do_match('latest', 'v1.2-0'))
         self.assertTrue(self.do_match('latest', '1.2.3'))
         self.assertTrue(self.do_match('', 'v1.2-b4'))

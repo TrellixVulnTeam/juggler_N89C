@@ -44,9 +44,9 @@ def create_argparser():
 
     return parser
 
-def main():
+def main(argv):
     parser = create_argparser()
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     
     deployment_path = os.path.join(args.BINARY_PATH, '.juggler')
     try:
@@ -84,4 +84,4 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(main(sys.argv))
