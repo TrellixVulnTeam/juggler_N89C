@@ -18,7 +18,7 @@
 
 import os
 import urllib
-import version
+from juggler import version
 from xml.etree import ElementTree
 from semantic_version import Version, Spec
 
