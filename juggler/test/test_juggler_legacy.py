@@ -5,6 +5,7 @@ Created on 22.03.2015
 '''
 
 from juggler.test.base_testcase import JugglerTestCase
+import os
 
 PRJ_EMPTY_LEGACY_XML = '''
     <Project>
@@ -28,3 +29,5 @@ class TestJuggler(JugglerTestCase):
         self._with_project_config(PRJ_EMPTY_LEGACY_XML)
         exit_code = self._run_juggler(args)
         self.assertEqual(exit_code, 0)
+        self.assertIn('Empty_vanilla-1.0.0-local.tar.gz',
+                      os.listdir(self.local_repo_dir))
