@@ -19,11 +19,12 @@
 from distutils.core import setup
 
 setup(name='Juggler',
-      version='0.2',
+      version='0.3',
       description='Dirty dependency management and packaging',
       author='Christian Meyer',
       author_email='konfuzzyus@gmail.com',
       url='http://github.com/Konfuzzyus/juggler',
       packages=['juggler'],
-      requires=['semantic_version (>2.3)']
+      install_requires=['semantic_version >2.3'],
+      test_suite='test'
      )
