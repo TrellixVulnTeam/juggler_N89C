@@ -83,7 +83,7 @@ class ProjectConfig:
         self.content_node = root.find('Content')
     
     def get_publishing_version(self, build_number):
-        return version.parse_version('%s-%d' % (version, build_number))
+        return version.parse_version('%s-%s' % (self.version, build_number))
 
 '''
 example juggler configuration
